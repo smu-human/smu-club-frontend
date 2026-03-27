@@ -1,14 +1,1 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/home/home";
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
-
-export default App;
+// 공통 레이아웃 사용 안했음
