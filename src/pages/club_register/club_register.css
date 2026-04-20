@@ -1,0 +1,347 @@
+/* src/pages/club_register/club_register.css */
+
+/* 네비게이션바 내부 컨테이너 폭을 본문과 맞춤 */
+.cr_page .page-header {
+  max-width: none;
+}
+.cr_page .page-header .container {
+  max-width: 100%;
+}
+
+.cr_main {
+  padding: 20px 16px 40px;
+  background: #e9efff;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+/* ===== 섹션 카드 ===== */
+.cr_section {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cr_title {
+  background: #0e207f;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 8px;
+  border-radius: 14px 14px 0 0;
+  text-align: center;
+  margin: 0;
+}
+
+.cr_card {
+  background: #fff;
+  border-radius: 0 0 14px 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cr_sub_text {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.cr_hint_text {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ===== 이미지 썸네일 그리드 ===== */
+.cr_thumb_grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.cr_thumb_item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 1px solid #e5e7eb;
+}
+
+.cr_thumb_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cr_thumb_remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cr_thumb_remove:hover {
+  background: rgba(185, 28, 28, 0.85);
+}
+
+.cr_outline_btn {
+  display: inline-block;
+  width: fit-content;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1.5px solid #0e207f;
+  color: #0e207f;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ===== 폼 필드 ===== */
+.cr_field_label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.cr_field_input {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.cr_field_input:focus {
+  border-color: #0e207f;
+  box-shadow: 0 0 0 3px rgba(14, 32, 127, 0.15);
+}
+
+/* ===== 저장 버튼 ===== */
+.cr_save_btn {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 2px;
+}
+
+.cr_primary_btn {
+  border: none;
+  border-radius: 9999px;
+  padding: 12px 16px;
+  background: #0e207f;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(14, 32, 127, 0.25);
+}
+
+.cr_primary_btn:hover {
+  filter: brightness(1.05);
+}
+
+.cr_primary_btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* ===== 에디터 영역 ===== */
+.cr_editor_shell {
+  position: relative;
+  /* 에디터 섹션은 max-width 제한 없이 넓게 */
+  max-width: none !important;
+  width: 100%;
+}
+
+.cr_section:has(.cr_editor_shell) {
+  max-width: 840px;
+  width: 100%;
+}
+
+.cr_editor_topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cr_mini_btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #111827;
+  border-radius: 9999px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.cr_mini_btn:hover {
+  filter: brightness(1.03);
+}
+
+.cr_editor_grid {
+  display: grid;
+  gap: 16px;
+}
+
+.cr_editor_grid.with_preview {
+  grid-template-columns: 1fr auto;
+  align-items: start;
+}
+
+.cr_editor_grid.no_preview {
+  grid-template-columns: 1fr;
+}
+
+.cr_editor_col {
+  min-width: 0;
+}
+
+/* ToastUI 에디터 스타일 통일 */
+.toastui-editor-defaultUI {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.toastui-editor-contents,
+.toastui-editor-contents *,
+.toastui-editor-md-preview,
+.toastui-editor-md-preview * {
+  font-family:
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Apple SD Gothic Neo",
+    "Noto Sans KR",
+    sans-serif !important;
+}
+
+/* ===== 프리뷰 컬럼 ===== */
+.cr_preview_col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cr_preview_title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* ===== 폰 프레임 ===== */
+.cr_phone_wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.cr_phone_frame {
+  width: 390px;
+  border: 8px solid #1f2937;
+  border-radius: 36px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  background: #fff;
+  position: relative;
+}
+
+.cr_phone_notch {
+  width: 100px;
+  height: 24px;
+  background: #1f2937;
+  border-radius: 0 0 16px 16px;
+  margin: 0 auto;
+}
+
+.cr_phone_screen {
+  width: 100%;
+  height: 560px;
+  overflow-y: auto;
+  background: #fff;
+  padding: 8px 16px 16px;
+  box-sizing: border-box;
+}
+
+/* 프리뷰 콘텐츠: 실제 club.jsx와 동일 타이포 */
+.cr_preview_content {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #111827;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.cr_preview_content img,
+.cr_preview_content table {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== 풀스크린 ===== */
+.cr_editor_fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #f8fafc;
+  padding: 16px 20px;
+  overflow: auto;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.cr_editor_fullscreen .cr_editor_grid.with_preview {
+  grid-template-columns: 1.2fr auto;
+  align-items: start;
+}
+
+.cr_editor_fullscreen .cr_phone_screen {
+  height: calc(74vh + 8px);
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 900px) {
+  .cr_editor_grid.with_preview {
+    grid-template-columns: 1fr;
+  }
+
+  .cr_phone_frame {
+    width: 320px;
+    border-radius: 28px;
+  }
+
+  .cr_phone_screen {
+    height: 440px;
+  }
+
+  .cr_phone_notch {
+    width: 80px;
+  }
+}

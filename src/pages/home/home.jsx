@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../../styles/globals.css";
 import "./home.css";
-import { fetch_public_clubs, is_logged_in } from "../../lib/api";
+import { fetch_public_clubs } from "../../lib/api";
 
 function ddayClass(d) {
   if (d == null) return "dday-neutral";
@@ -59,11 +59,6 @@ export default function HomePage() {
   const [clubs, setClubs] = useState([]);
   const [is_loading, set_is_loading] = useState(false);
   const [error_msg, set_error_msg] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  useEffect(() => {
-    setLoggedIn(is_logged_in());
-  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -134,24 +129,9 @@ export default function HomePage() {
           </button>
 
           <div className="header_actions">
-            {loggedIn ? (
-              <button
-                type="button"
-                className="btn text"
-                onClick={() => nav("/mypage")}
-              >
-                마이페이지
-              </button>
-            ) : (
-              <>
-                <Link to="/login" className="btn text">
-                  로그인
-                </Link>
-                <Link to="/signup" className="btn primary">
-                  회원가입
-                </Link>
-              </>
-            )}
+            <Link to="/admin/login" className="btn primary">
+              관리자 로그인
+            </Link>
           </div>
         </div>
 
