@@ -14,9 +14,15 @@ import ApplyFormEdit from "../pages/apply_form_edit/apply_form_edit.jsx";
 import ApplyForm from "../pages/apply_form/apply_form.jsx";
 import ApplyFormSubmit from "../pages/apply_form_submit/apply_form_submit.jsx";
 import ApplyFormChange from "../pages/apply_form_change/apply_form_change.jsx";
+import AdminLoginPage from "../pages/admin_login/admin_login.jsx";
+import AdminDashboard from "../pages/admin_dashboard/admin_dashboard.jsx";
+import ClubRegister from "../pages/club_register/club_register.jsx";
 
 export const router = createBrowserRouter([
   { path: "/", element: <HomePage /> },
+  { path: "/admin/login", element: <AdminLoginPage /> },
+  { path: "/admin/dashboard", element: <AdminDashboard /> },
+  { path: "/admin/club_register", element: <ClubRegister /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/signup", element: <SignupPage /> },
   { path: "/club/:id", element: <ClubPage /> },
