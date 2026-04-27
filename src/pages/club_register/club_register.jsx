@@ -149,7 +149,8 @@ export default function ClubRegister() {
       </div>
 
       <main className="page-main cr_main">
-        {/* 갤러리 이미지 */}
+        {/* 갤러리 이미지 + 기본 정보 (1행 2열) */}
+        <div className="cr_top_row">
         <section className="cr_section">
           <h2 className="cr_title">갤러리 이미지</h2>
           <div className="cr_card">
@@ -175,24 +176,25 @@ export default function ClubRegister() {
               </div>
             )}
 
-            <label
-              className="cr_outline_btn"
-              htmlFor="clubGallery"
-              style={{ opacity: images.length >= 5 ? 0.5 : 1, pointerEvents: images.length >= 5 ? "none" : "auto" }}
-            >
-              이미지 추가
-            </label>
-            <input
-              id="clubGallery"
-              type="file"
-              accept="image/png, image/jpeg"
-              multiple
-              onChange={on_pick_images}
-              disabled={images.length >= 5}
-              style={{ display: "none" }}
-            />
-
-            <p className="cr_hint_text">{`선택: ${images.length}개 / 최대 5개`}</p>
+            <div className="cr_gallery_center">
+              <label
+                className="cr_outline_btn"
+                htmlFor="clubGallery"
+                style={{ opacity: images.length >= 5 ? 0.5 : 1, pointerEvents: images.length >= 5 ? "none" : "auto" }}
+              >
+                이미지 추가
+              </label>
+              <input
+                id="clubGallery"
+                type="file"
+                accept="image/png, image/jpeg"
+                multiple
+                onChange={on_pick_images}
+                disabled={images.length >= 5}
+                style={{ display: "none" }}
+              />
+              <p className="cr_hint_text">{`선택: ${images.length}개 / 최대 5개`}</p>
+            </div>
           </div>
         </section>
 
@@ -247,6 +249,7 @@ export default function ClubRegister() {
             />
           </div>
         </section>
+        </div>
 
         {/* 동아리 소개 */}
         <section className="cr_section">

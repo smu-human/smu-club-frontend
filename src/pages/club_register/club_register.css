@@ -17,6 +17,21 @@
   align-items: center;
 }
 
+/* ===== 상단 2열 래퍼 ===== */
+.cr_top_row {
+  width: 100%;
+  max-width: 840px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.cr_top_row .cr_section {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ===== 섹션 카드 ===== */
 .cr_section {
   width: 100%;
@@ -43,6 +58,20 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+}
+
+/* 갤러리 카드 — 버튼+힌트 정중앙 */
+.cr_top_row .cr_section:first-child .cr_card {
+  flex: 1;
+}
+
+.cr_gallery_center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
 }
 
@@ -140,7 +169,7 @@
 .cr_save_btn {
   width: 100%;
   max-width: 420px;
-  margin-top: 2px;
+  margin-top: 40px;
 }
 
 .cr_primary_btn {
@@ -328,6 +357,10 @@
 
 /* ===== 반응형 ===== */
 @media (max-width: 900px) {
+  .cr_top_row {
+    grid-template-columns: 1fr;
+  }
+
   .cr_editor_grid.with_preview {
     grid-template-columns: 1fr;
   }

@@ -17,12 +17,14 @@ import ApplyFormChange from "../pages/apply_form_change/apply_form_change.jsx";
 import AdminLoginPage from "../pages/admin_login/admin_login.jsx";
 import AdminDashboard from "../pages/admin_dashboard/admin_dashboard.jsx";
 import ClubRegister from "../pages/club_register/club_register.jsx";
+import AdminApplyFormEdit from "../pages/admin_apply_form_edit/admin_apply_form_edit.jsx";
 
 export const router = createBrowserRouter([
   { path: "/", element: <HomePage /> },
   { path: "/admin/login", element: <AdminLoginPage /> },
   { path: "/admin/dashboard", element: <AdminDashboard /> },
   { path: "/admin/club_register", element: <ClubRegister /> },
+  { path: "/admin/apply_form_edit/:id", element: <AdminApplyFormEdit /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/signup", element: <SignupPage /> },
   { path: "/club/:id", element: <ClubPage /> },

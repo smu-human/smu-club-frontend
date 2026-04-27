@@ -198,13 +198,16 @@ export default function AdminDashboard() {
         <div className="adm-body-grid">
           {/* 좌측: 동아리 관리 */}
           <div className="adm-panel">
-            <h2 className="adm-panel-title">동아리 관리</h2>
+            {/* <h2 className="adm-panel-title">동아리 관리</h2> */}
             <ul className="adm-menu-list">
-              <li className="adm-menu-item" onClick={() => navigate("/admin/club_register")}>
+              <li
+                className="adm-menu-item"
+                onClick={() => navigate("/admin/club_register")}
+              >
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">동아리 페이지</span>
                   <span className="adm-menu-item-desc">
-                    페이지 제작하는 것 관리
+                    동아리 페이지를 확인합니다
                   </span>
                 </div>
                 <svg
@@ -223,7 +226,7 @@ export default function AdminDashboard() {
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">동아리 정보 수정</span>
                   <span className="adm-menu-item-desc">
-                    기본 정보 및 설정 변경
+                    동아리 정보 및 상태를 변경합니다
                   </span>
                 </div>
                 <svg
@@ -238,11 +241,11 @@ export default function AdminDashboard() {
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </li>
-              <li className="adm-menu-item">
+              <li className="adm-menu-item" onClick={() => navigate("/admin/apply_form_edit/1")}>
                 <div className="adm-menu-item-text">
-                  <span className="adm-menu-item-name">지원서 수정</span>
+                  <span className="adm-menu-item-name">지원서 양식 수정</span>
                   <span className="adm-menu-item-desc">
-                    지원자 정보 및 질문 관리
+                    동아리 지원을 위한 지원서 양식을 수정합니다
                   </span>
                 </div>
                 <svg
@@ -295,13 +298,13 @@ export default function AdminDashboard() {
 
           {/* 중앙: 지원자 관리 */}
           <div className="adm-panel">
-            <h2 className="adm-panel-title">지원자 관리</h2>
+            {/* <h2 className="adm-panel-title">지원자 관리</h2> */}
             <ul className="adm-menu-list">
               <li className="adm-menu-item">
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">지원자 목록보기</span>
                   <span className="adm-menu-item-desc">
-                    인재 자료 및 현황 확인
+                    지원자를 조회합니다
                   </span>
                 </div>
                 <svg
@@ -316,25 +319,7 @@ export default function AdminDashboard() {
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </li>
-              <li className="adm-menu-item">
-                <div className="adm-menu-item-text">
-                  <span className="adm-menu-item-name">
-                    지원자 조회 상태보기
-                  </span>
-                  <span className="adm-menu-item-desc">개별 자료 검토</span>
-                </div>
-                <svg
-                  className="adm-chevron"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </li>
+
               <li className="adm-menu-item">
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">지원자 최종 알림</span>

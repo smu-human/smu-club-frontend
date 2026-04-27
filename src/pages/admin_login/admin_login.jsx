@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/globals.css";
-import "../login/login.css";
+import "./admin_login.css";
 import { apiLogin, is_logged_in } from "../../lib/api";
 
 export default function AdminLogin() {
@@ -194,7 +194,7 @@ export default function AdminLogin() {
                     로그인 상태 유지
                   </label>
                   <a
-                    href="https://smsso.smu.ac.kr/svc/tk/Auth.do?ac=Y&ifa=N&id=portal&"
+                    href="https://open.kakao.com/o/gYlJJWii"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="forgot-password"
