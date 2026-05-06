@@ -1,0 +1,285 @@
+/* src/pages/admin_applicant_manage/admin_applicant_manage.css */
+
+.adm-ap-root {
+  min-height: 100vh;
+  background: #e9efff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 */
+.adm-ap-header {
+  background: #fff;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  padding: 12px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-bottom: 30px;
+}
+
+.adm-ap-header-inner {
+  height: 56px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adm-ap-logo {
+  width: 500px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.adm-ap-back-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.adm-ap-back-icon {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+}
+
+/* 메인 */
+.adm-ap-main {
+  flex: 1;
+  padding: 0 24px 40px;
+  box-sizing: border-box;
+  max-width: 1500px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* 섹션 카드 */
+.adm-ap-section {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+/* 타이틀 바 */
+.adm-ap-title {
+  background: #0e207f;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 20px;
+  margin: 0;
+  text-align: center;
+}
+
+/* 툴바 */
+.adm-ap-toolbar {
+  padding: 16px 20px 8px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.adm-ap-hint {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.adm-ap-checking {
+  color: #9ca3af;
+}
+
+/* 버튼 그룹 */
+.adm-ap-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.adm-ap-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.12s;
+  white-space: nowrap;
+}
+
+.adm-ap-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.adm-ap-btn:disabled {
+  cursor: not-allowed;
+  transform: none;
+}
+
+.adm-ap-btn-excel {
+  background: #0e207f;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(14, 32, 127, 0.22);
+}
+
+.adm-ap-btn-mail {
+  background: #ffe8e8;
+  color: #e53e3e;
+}
+
+/* 지원자 리스트 */
+.adm-ap-list {
+  padding: 8px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adm-ap-empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
+  padding: 24px 0;
+}
+
+/* 지원자 카드 */
+.adm-ap-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  text-align: left;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.adm-ap-card:hover {
+  transform: scale(1.005);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.11);
+}
+
+.adm-ap-card:active {
+  transform: scale(0.998);
+}
+
+.adm-ap-card-info {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  display: inline-flex;
+  gap: 10px;
+  align-items: baseline;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-ap-card-studentid {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* 상태 뱃지 */
+.adm-ap-badge {
+  min-width: 72px;
+  text-align: center;
+  border-radius: 12px;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.adm-ap-badge-pass {
+  background: #eef2ff;
+  color: #0e207f;
+}
+
+.adm-ap-badge-fail {
+  background: #ffe4e4;
+  color: #d62b2b;
+}
+
+.adm-ap-badge-pending {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* 푸터 */
+.adm-ap-footer {
+  text-align: center;
+  padding: 20px 24px;
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.6;
+}
+
+.adm-ap-footer a {
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.adm-ap-footer a:hover {
+  text-decoration: underline;
+}
+
+/* 반응형 */
+@media (max-width: 600px) {
+  .adm-ap-header {
+    padding: 12px 16px;
+  }
+
+  .adm-ap-logo {
+    width: 200px;
+  }
+
+  .adm-ap-main {
+    padding: 0 16px 32px;
+  }
+
+  .adm-ap-toolbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .adm-ap-actions {
+    width: 100%;
+  }
+
+  .adm-ap-btn {
+    flex: 1;
+  }
+}

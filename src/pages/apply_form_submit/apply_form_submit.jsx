@@ -250,7 +250,7 @@ export default function ApplyFormSubmit() {
       await member_apply_club(club_id, payload);
 
       alert("지원서가 제출되었습니다.");
-      navigate(-1);
+      navigate(club_id ? `/club/${club_id}` : "/");
     } catch (err) {
       set_error_msg(err?.message || "제출에 실패했습니다.");
     } finally {
@@ -267,7 +267,7 @@ export default function ApplyFormSubmit() {
               type="button"
               className="back-btn"
               aria-label="뒤로가기"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(club_id ? `/club/${club_id}` : "/")}
             >
               <svg
                 className="icon"

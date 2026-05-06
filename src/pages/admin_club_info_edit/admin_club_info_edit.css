@@ -1,15 +1,17 @@
-/* src/pages/club_register/club_register.css */
+/* src/pages/admin_club_info_edit/admin_club_info_edit.css
+   club_register.css와 동일한 스타일 — cr_ prefix 그대로 사용 */
 
-/* 네비게이션바 내부 컨테이너 폭을 본문과 맞춤 */
-.cr_page .page-header {
+.acie_page .page-header {
   max-width: none;
 }
-.cr_page .page-header .container {
+.acie_page .page-header .container {
   max-width: 100%;
 }
 
+/* cr_ 클래스들은 club_register.css와 동일 구조 — 아래에 재정의 */
+
 .cr_main {
-  padding: 20px 16px 40px;
+  padding: 30px 16px 40px;
   background: #e9efff;
   display: flex;
   flex-direction: column;
@@ -17,7 +19,6 @@
   align-items: center;
 }
 
-/* ===== 상단 2열 래퍼 ===== */
 .cr_top_row {
   width: 100%;
   max-width: 840px;
@@ -32,7 +33,6 @@
   flex-direction: column;
 }
 
-/* ===== 섹션 카드 ===== */
 .cr_section {
   width: 100%;
   max-width: 420px;
@@ -61,7 +61,6 @@
   gap: 10px;
 }
 
-/* 갤러리 카드 — 버튼+힌트 정중앙 */
 .cr_top_row .cr_section:first-child .cr_card {
   flex: 1;
 }
@@ -85,7 +84,6 @@
   color: #6b7280;
 }
 
-/* ===== 이미지 리스트 ===== */
 .cr_hint_drag {
   font-size: 11px;
   color: #9ca3af;
@@ -188,7 +186,6 @@
   font-size: 14px;
 }
 
-/* ===== 폼 필드 ===== */
 .cr_field_label {
   font-size: 13px;
   color: #6b7280;
@@ -200,7 +197,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   box-sizing: border-box;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
@@ -211,7 +208,6 @@
   box-shadow: 0 0 0 3px rgba(14, 32, 127, 0.15);
 }
 
-/* ===== 저장 버튼 ===== */
 .cr_save_btn {
   width: 100%;
   max-width: 420px;
@@ -239,10 +235,9 @@
   filter: none;
 }
 
-/* ===== 에디터 영역 ===== */
+/* 에디터 영역 */
 .cr_editor_shell {
   position: relative;
-  /* 에디터 섹션은 max-width 제한 없이 넓게 */
   max-width: none !important;
   width: 100%;
 }
@@ -293,7 +288,6 @@
   min-width: 0;
 }
 
-/* ToastUI 에디터 스타일 통일 */
 .toastui-editor-defaultUI {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -305,16 +299,10 @@
 .toastui-editor-contents *,
 .toastui-editor-md-preview,
 .toastui-editor-md-preview * {
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Apple SD Gothic Neo",
-    "Noto Sans KR",
-    sans-serif !important;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif !important;
 }
 
-/* ===== 프리뷰 컬럼 ===== */
+/* 프리뷰 폰 프레임 */
 .cr_preview_col {
   display: flex;
   flex-direction: column;
@@ -330,7 +318,6 @@
   text-align: center;
 }
 
-/* ===== 폰 프레임 ===== */
 .cr_phone_wrapper {
   display: flex;
   justify-content: center;
@@ -340,9 +327,7 @@
   width: 390px;
   border: 8px solid #1f2937;
   border-radius: 36px;
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   overflow: hidden;
   background: #fff;
   position: relative;
@@ -365,7 +350,6 @@
   box-sizing: border-box;
 }
 
-/* 프리뷰 콘텐츠: 실제 club.jsx와 동일 타이포 */
 .cr_preview_content {
   font-size: 14px;
   line-height: 1.65;
@@ -380,7 +364,7 @@
   box-sizing: border-box;
 }
 
-/* ===== 풀스크린 ===== */
+/* 풀스크린 */
 .cr_editor_fullscreen {
   position: fixed;
   inset: 0;
@@ -401,7 +385,7 @@
   height: calc(74vh + 8px);
 }
 
-/* ===== 반응형 ===== */
+/* 반응형 */
 @media (max-width: 900px) {
   .cr_top_row {
     grid-template-columns: 1fr;
