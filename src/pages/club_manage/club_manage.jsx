@@ -237,7 +237,7 @@ export default function ClubManage() {
               type="button"
               className="back-btn"
               aria-label="뒤로가기"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/mypage")}
             >
               <svg
                 className="icon"

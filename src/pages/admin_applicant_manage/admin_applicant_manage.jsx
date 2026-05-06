@@ -1,8 +1,7 @@
-// src/pages/applicant_manage/applicant_manage.jsx
+// src/pages/admin_applicant_manage/admin_applicant_manage.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import "../../styles/globals.css";
-import "./applicant_manage.css";
+import "./admin_applicant_manage.css";
 import {
   fetch_owner_applicants,
   fetch_owner_applicant_detail,
@@ -32,7 +31,7 @@ function status_to_card_class(s) {
   return "pending";
 }
 
-export default function ApplicantManage() {
+export default function AdminApplicantManage() {
   const navigate = useNavigate();
   const { clubId } = useParams();
 
@@ -208,7 +207,6 @@ export default function ApplicantManage() {
 
   const all_decided = useMemo(() => {
     if (!applicants?.length) return false;
-
     return applicants.every((a) => {
       const cid = String(a.clubMemberId);
       const s = a.status || status_map[cid] || "pending";
@@ -241,86 +239,74 @@ export default function ApplicantManage() {
   };
 
   return (
-    <div className="page-root">
-      <div className="page-header sticky-header safe-area-top">
-        <div className="container">
-          <div className="page-header-content">
-            <button
-              type="button"
-              className="back-btn"
-              aria-label="뒤로가기"
-              onClick={() => navigate("/mypage")}
+    <div className="adm-ap-root">
+      {/* 헤더 */}
+      <header className="adm-ap-header">
+        <div className="adm-ap-header-inner">
+          <button
+            type="button"
+            className="adm-ap-back-btn"
+            aria-label="뒤로가기"
+            onClick={() => navigate("/admin/dashboard")}
+          >
+            <svg
+              className="adm-ap-back-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
             >
-              <svg
-                className="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path d="M19 12H5" />
-                <path d="M12 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h1>지원자 관리</h1>
-          </div>
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <img src="/images/2.png" alt="SMU Club 로고" className="adm-ap-logo" />
         </div>
-      </div>
+      </header>
 
-      <main className="page-main applicant_main">
-        <section className="applicant_section">
-          <h2 className="applicant_title">지원자</h2>
+      <main className="adm-ap-main">
+        <div className="adm-ap-section">
+          <h2 className="adm-ap-title">지원자 목록</h2>
 
-          <div className="applicant_footer">
-            <p className="hint_text">
-              지원자를 클릭해서 지원서 보기
-              <br />
-              {status_checking ? "상태 확인중..." : ""}
+          <div className="adm-ap-toolbar">
+            <p className="adm-ap-hint">
+              지원자를 클릭하면 지원서를 확인할 수 있습니다.
+              {status_checking && <span className="adm-ap-checking"> 상태 확인 중...</span>}
             </p>
-
-            <div className="applicant_actions">
+            <div className="adm-ap-actions">
               <button
-                className="mail_btn"
                 type="button"
+                className="adm-ap-btn adm-ap-btn-excel"
                 onClick={download_excel}
                 disabled={excel_loading}
               >
-                {excel_loading ? "다운로드 중..." : "지원자 엑셀 다운로드"}
+                {excel_loading ? "다운로드 중..." : "엑셀 다운로드"}
               </button>
-
               <button
-                className="mail_btn"
                 type="button"
+                className="adm-ap-btn adm-ap-btn-mail"
                 onClick={send_result_email}
                 disabled={email_loading}
-                style={{
-                  opacity: email_loading ? 0.6 : all_decided ? 1 : 0.35,
-                }}
+                style={{ opacity: email_loading ? 0.6 : all_decided ? 1 : 0.35 }}
                 title={
                   all_decided
                     ? "합불 결과 메일 발송"
                     : "모든 지원자의 합/불을 결정해야 발송할 수 있습니다."
                 }
               >
-                {email_loading ? "발송중..." : "합불결과 메일 발송하기"}
+                {email_loading ? "발송 중..." : "합불결과 메일 발송"}
               </button>
             </div>
           </div>
 
-          {loading ? (
-            <div className="applicant_list">
-              <div className="applicant_card">불러오는 중...</div>
-            </div>
-          ) : error_msg ? (
-            <div className="applicant_list">
-              <div className="applicant_card">{error_msg}</div>
-            </div>
-          ) : applicants.length === 0 ? (
-            <div className="applicant_list">
-              <div className="applicant_card">지원자가 없습니다.</div>
-            </div>
-          ) : (
-            <div className="applicant_list">
-              {applicants.map((a) => {
+          <div className="adm-ap-list">
+            {loading ? (
+              <div className="adm-ap-empty">불러오는 중...</div>
+            ) : error_msg ? (
+              <div className="adm-ap-empty">{error_msg}</div>
+            ) : applicants.length === 0 ? (
+              <div className="adm-ap-empty">지원자가 없습니다.</div>
+            ) : (
+              applicants.map((a) => {
                 const cid = String(a.clubMemberId);
                 const s = status_map[cid] ?? a.status ?? "pending";
 
@@ -328,33 +314,25 @@ export default function ApplicantManage() {
                   <button
                     key={cid}
                     type="button"
-                    className="applicant_card applicant_card_btn"
+                    className="adm-ap-card"
                     onClick={() => go_apply_form(a.clubMemberId)}
                   >
-                    <span className="applicant_info">
-                      {a.name} {a.studentId}
+                    <span className="adm-ap-card-info">
+                      {a.name}
+                      <span className="adm-ap-card-studentid">{a.studentId}</span>
                     </span>
-
-                    <span
-                      className={`applicant_status ${status_to_card_class(s)}`}
-                    >
+                    <span className={`adm-ap-badge adm-ap-badge-${status_to_card_class(s)}`}>
                       {status_label(s)}
                     </span>
                   </button>
                 );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* 선택 상세 모달 제거 대신, 아래 상태 변경 기능을 유지하려면 별도 UI가 필요함.
-            현재는 카드 클릭 시 apply_form으로 이동하므로, 아래 버튼들은 apply_form에서 처리하는 구조를 권장. */}
-        <div style={{ display: "none" }}>
-          <button onClick={() => update_status("0", "PENDING")} />
+              })
+            )}
+          </div>
         </div>
       </main>
 
-      <div className="page-footer">
+      <div className="adm-ap-footer">
         <p>© 2025 smu-club. 상명대학교 동아리 플랫폼</p>
         <p>
           <a
@@ -365,6 +343,11 @@ export default function ApplicantManage() {
             Github
           </a>
         </p>
+      </div>
+
+      {/* status update 내부 유지용 (hidden) */}
+      <div style={{ display: "none" }}>
+        <button onClick={() => update_status("0", "PENDING")} />
       </div>
     </div>
   );

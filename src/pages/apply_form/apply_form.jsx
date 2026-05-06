@@ -283,7 +283,7 @@ export default function ApplyForm() {
                 type="button"
                 className="back-btn"
                 aria-label="뒤로가기"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(club_id ? `/applicant_manage/${club_id}` : "/mypage")}
               >
                 <svg
                   className="icon"
@@ -319,7 +319,7 @@ export default function ApplyForm() {
                 type="button"
                 className="back-btn"
                 aria-label="뒤로가기"
-                onClick={() => navigate(-1)}
+                onClick={() => navigate(club_id ? `/applicant_manage/${club_id}` : "/mypage")}
               >
                 <svg
                   className="icon"

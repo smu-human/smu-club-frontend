@@ -2,14 +2,13 @@
 
 .afe_page .page-header {
   max-width: none;
-  margin-bottom: 30px;
 }
 .afe_page .page-header .container {
   max-width: 100%;
 }
 
 .afe_main {
-  padding: 20px 16px 40px;
+  padding: 30px 16px 40px;
   background: #e9efff;
   display: flex;
   flex-direction: column;

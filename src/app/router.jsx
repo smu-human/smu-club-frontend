@@ -18,6 +18,9 @@ import AdminLoginPage from "../pages/admin_login/admin_login.jsx";
 import AdminDashboard from "../pages/admin_dashboard/admin_dashboard.jsx";
 import ClubRegister from "../pages/club_register/club_register.jsx";
 import AdminApplyFormEdit from "../pages/admin_apply_form_edit/admin_apply_form_edit.jsx";
+import ClubInfoEdit from "../pages/club_info_edit/club_info_edit.jsx";
+import AdminClubInfoEdit from "../pages/admin_club_info_edit/admin_club_info_edit.jsx";
+import AdminApplicantManage from "../pages/admin_applicant_manage/admin_applicant_manage.jsx";
 
 export const router = createBrowserRouter([
   { path: "/", element: <HomePage /> },
@@ -25,6 +28,8 @@ export const router = createBrowserRouter([
   { path: "/admin/dashboard", element: <AdminDashboard /> },
   { path: "/admin/club_register", element: <ClubRegister /> },
   { path: "/admin/apply_form_edit/:id", element: <AdminApplyFormEdit /> },
+  { path: "/admin/club_info_edit/:clubId", element: <AdminClubInfoEdit /> },
+  { path: "/admin/applicant_manage/:clubId", element: <AdminApplicantManage /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/signup", element: <SignupPage /> },
   { path: "/club/:id", element: <ClubPage /> },
@@ -33,6 +38,7 @@ export const router = createBrowserRouter([
 
   { path: "/club_edit", element: <ClubEdit /> },
   { path: "/club_manage/:clubId", element: <ClubManage /> },
+  { path: "/club_info_edit/:clubId", element: <ClubInfoEdit /> },
 
   { path: "/applicant_manage/:clubId", element: <ApplicantManage /> },
 

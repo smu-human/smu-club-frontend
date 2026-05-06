@@ -44,6 +44,8 @@ export default function ClubRegister() {
   // 이미지: File[] + 썸네일 URL[]
   const [images, set_images] = useState([]);
   const [thumb_urls, set_thumb_urls] = useState([]);
+  const drag_idx = useRef(null);
+  const [over_idx, set_over_idx] = useState(null);
 
   const [is_saving, set_is_saving] = useState(false);
 
@@ -113,6 +115,18 @@ export default function ClubRegister() {
     set_thumb_urls((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const reorder_images = (from, to) => {
+    if (from === to) return;
+    const reorder = (arr) => {
+      const next = [...arr];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    };
+    set_images((prev) => reorder(prev));
+    set_thumb_urls((prev) => reorder(prev));
+  };
+
   const on_save = () => {
     if (is_saving) return;
     if (!deadline) {
@@ -156,21 +170,42 @@ export default function ClubRegister() {
           <div className="cr_card">
             <p className="cr_sub_text">
               동아리 페이지 상단 갤러리 이미지를 등록하세요. (JPG/PNG, 최대 5장)
+              <br />
+              <span className="cr_hint_drag">드래그로 순서 변경</span>
             </p>
 
             {thumb_urls.length > 0 && (
-              <div className="cr_thumb_grid">
+              <div className="cr_img_list">
                 {thumb_urls.map((url, idx) => (
-                  <div key={url} className="cr_thumb_item">
-                    <img src={url} alt={`갤러리 ${idx + 1}`} className="cr_thumb_img" />
+                  <div
+                    key={url}
+                    className={`cr_img_row${over_idx === idx ? " cr_img_row--over" : ""}${drag_idx.current === idx ? " cr_img_row--dragging" : ""}`}
+                    draggable
+                    onDragStart={() => { drag_idx.current = idx; set_over_idx(null); }}
+                    onDragEnd={() => { drag_idx.current = null; set_over_idx(null); }}
+                    onDragOver={(e) => { e.preventDefault(); set_over_idx(idx); }}
+                    onDragLeave={() => set_over_idx(null)}
+                    onDrop={() => {
+                      reorder_images(drag_idx.current, idx);
+                      drag_idx.current = null;
+                      set_over_idx(null);
+                    }}
+                  >
+                    <img src={url} alt={`갤러리 ${idx + 1}`} className="cr_img_thumb" />
+                    <span className="cr_img_label">이미지 {idx + 1}</span>
                     <button
                       type="button"
-                      className="cr_thumb_remove"
+                      className="cr_img_remove"
                       onClick={() => remove_image(idx)}
                       aria-label="이미지 삭제"
-                    >
-                      ×
-                    </button>
+                    >×</button>
+                    <div className="cr_img_handle" aria-label="순서 변경">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="4" y1="6" x2="20" y2="6" />
+                        <line x1="4" y1="12" x2="20" y2="12" />
+                        <line x1="4" y1="18" x2="20" y2="18" />
+                      </svg>
+                    </div>
                   </div>
                 ))}
               </div>

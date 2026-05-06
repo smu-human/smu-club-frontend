@@ -26,6 +26,10 @@ body {
   background-color: var(--club-bg);
   padding: 0 12px; /* ← 카드 양옆 여백 추가 */
 }
+
+.club_page .club_main {
+  padding-top: 30px;
+}
 /* club.css 추가 */
 .club_header_row {
   display: flex;

@@ -222,7 +222,7 @@ export default function AdminDashboard() {
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </li>
-              <li className="adm-menu-item">
+              <li className="adm-menu-item" onClick={() => navigate("/admin/club_info_edit/1")}>
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">동아리 정보 수정</span>
                   <span className="adm-menu-item-desc">
@@ -299,8 +299,15 @@ export default function AdminDashboard() {
           {/* 중앙: 지원자 관리 */}
           <div className="adm-panel">
             {/* <h2 className="adm-panel-title">지원자 관리</h2> */}
+            <div className="adm-applicant-count">
+              <span className="adm-applicant-count-label">현재 지원자 수</span>
+              <span className="adm-applicant-count-num">{DUMMY_APPLICANTS_COUNT}명</span>
+            </div>
             <ul className="adm-menu-list">
-              <li className="adm-menu-item">
+              <li
+                className="adm-menu-item"
+                onClick={() => navigate("/admin/applicant_manage/1")}
+              >
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">지원자 목록보기</span>
                   <span className="adm-menu-item-desc">
