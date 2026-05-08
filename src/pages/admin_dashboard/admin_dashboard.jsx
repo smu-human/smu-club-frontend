@@ -199,6 +199,40 @@ export default function AdminDashboard() {
           {/* 좌측: 동아리 관리 */}
           <div className="adm-panel">
             {/* <h2 className="adm-panel-title">동아리 관리</h2> */}
+            <div className="adm-recruit-status">
+              <div className="adm-recruit-status-info">
+                <span className="adm-recruit-label">현재 상태</span>
+                <span className="adm-recruit-state">모집 마감</span>
+              </div>
+              <div className="adm-recruit-btns">
+                <button type="button" className="adm-btn-start">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  모집시작
+                </button>
+                <button type="button" className="adm-btn-close">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  모집마감
+                </button>
+              </div>
+            </div>
+
             <ul className="adm-menu-list">
               <li
                 className="adm-menu-item"
@@ -261,39 +295,6 @@ export default function AdminDashboard() {
                 </svg>
               </li>
             </ul>
-
-            <div className="adm-recruit-status">
-              <span className="adm-recruit-label">현재 상태</span>
-              <span className="adm-recruit-state">모집 마감</span>
-            </div>
-
-            <div className="adm-recruit-btns">
-              <button type="button" className="adm-btn-start">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                모집시작
-              </button>
-              <button type="button" className="adm-btn-close">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-                모집마감
-              </button>
-            </div>
           </div>
 
           {/* 중앙: 지원자 관리 */}
