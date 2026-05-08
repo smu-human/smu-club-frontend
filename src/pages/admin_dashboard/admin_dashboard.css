@@ -209,10 +209,17 @@
 
 /* 모집 상태 */
 .adm-recruit-status {
-  margin-top: 16px;
-  padding: 14px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
   background: #f9fafb;
   border-radius: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.adm-recruit-status-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -234,7 +241,6 @@
 .adm-recruit-btns {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
 }
 
 .adm-btn-start,
