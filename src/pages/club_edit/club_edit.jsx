@@ -5,7 +5,7 @@ import "../../styles/globals.css";
 import "./club_edit.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
-import { owner_upload_images, owner_register_club } from "../../lib/api";
+import { owner_register_club } from "../../lib/api";
 
 export default function ClubEdit() {
   const navigate = useNavigate();
@@ -42,13 +42,9 @@ export default function ClubEdit() {
   const today_str = new Date().toISOString().slice(0, 10);
 
   const [club_name, set_club_name] = useState("");
-  const [club_one_line, set_club_one_line] = useState("");
-  const [leader_name, set_leader_name] = useState("");
-  const [phone, set_phone] = useState("");
-
-  const [deadline, set_deadline] = useState("");
-
-  const [images, set_images] = useState([]); // File[]
+  const [president_name, set_president_name] = useState("");
+  const [president_phone, set_president_phone] = useState("");
+  const [recruit_deadline, set_recruit_deadline] = useState("");
   const [is_saving, set_is_saving] = useState(false);
 
   // ✅ 실시간 “실제 렌더” 프리뷰
@@ -90,54 +86,25 @@ export default function ClubEdit() {
     return () => window.removeEventListener("keydown", on_key);
   }, []);
 
-  const on_pick_images = (e) => {
-    const files = Array.from(e.target.files || []);
-
-    if (files.length > 5) {
-      alert("이미지는 최대 5장까지만 등록할 수 있습니다.");
-      set_images(files.slice(0, 5));
-    } else {
-      set_images(files);
-    }
-
-    e.target.value = "";
-  };
-
   const on_save = async () => {
     if (is_saving) return;
     set_is_saving(true);
 
     try {
-      if (!deadline) {
+      if (!recruit_deadline) {
         alert("모집 마감일을 설정해주세요.");
-        return;
-      }
-
-      if (images.length > 5) {
-        alert("이미지는 최대 5장까지만 등록할 수 있습니다.");
         return;
       }
 
       const intro_html = editorRef.current?.getInstance().getHTML() || "";
 
-      const uploaded_image_file_names = images.length
-        ? await owner_upload_images(images)
-        : [];
-
-      if (uploaded_image_file_names.length > 5) {
-        alert("이미지는 최대 5장까지만 등록할 수 있습니다.");
-        return;
-      }
-
       await owner_register_club({
-        uploadedImageFileNames: uploaded_image_file_names,
         name: club_name,
-        title: club_one_line,
-        president: leader_name,
-        contact: phone,
-        recruitingEnd: deadline || null,
-        clubRoom: "",
+        presidentName: president_name,
+        presidentPhone: president_phone,
+        recruitDeadline: recruit_deadline || null,
         description: intro_html,
+        type: "CENTRAL",
       });
 
       alert("저장 완료");
@@ -177,29 +144,6 @@ export default function ClubEdit() {
 
       <main className="page-main club_edit_main">
         <section className="club_section">
-          <h2 className="club_title">갤러리 이미지</h2>
-          <div className="club_card">
-            <p className="sub_text">
-              동아리 페이지 상단 갤러리 이미지를 등록하세요. (JPG/PNG, 최대 5장)
-            </p>
-
-            <label className="outline_btn" htmlFor="clubGallery">
-              이미지 추가
-            </label>
-            <input
-              id="clubGallery"
-              type="file"
-              accept="image/png, image/jpeg"
-              multiple
-              onChange={on_pick_images}
-              style={{ display: "none" }}
-            />
-
-            <p className="hint_text">{`선택: ${images.length}개 / 최대 5개`}</p>
-          </div>
-        </section>
-
-        <section className="club_section">
           <h2 className="club_title">기본 정보</h2>
           <div className="club_card">
             <label className="field_label">동아리명</label>
@@ -210,37 +154,29 @@ export default function ClubEdit() {
               onChange={(e) => set_club_name(e.target.value)}
             />
 
-            <label className="field_label">동아리 한줄 소개</label>
+            <label className="field_label">회장 이름</label>
             <input
               className="field_input"
               type="text"
-              value={club_one_line}
-              onChange={(e) => set_club_one_line(e.target.value)}
+              value={president_name}
+              onChange={(e) => set_president_name(e.target.value)}
             />
 
-            <label className="field_label">회장</label>
-            <input
-              className="field_input"
-              type="text"
-              value={leader_name}
-              onChange={(e) => set_leader_name(e.target.value)}
-            />
-
-            <label className="field_label">연락처 (- 없이 숫자만 입력)</label>
+            <label className="field_label">회장 연락처 (- 없이 숫자만 입력)</label>
             <input
               className="field_input"
               type="tel"
-              value={phone}
-              onChange={(e) => set_phone(e.target.value)}
+              value={president_phone}
+              onChange={(e) => set_president_phone(e.target.value)}
             />
 
             <label className="field_label">모집 마감일</label>
             <input
               className="field_input"
               type="date"
-              value={deadline}
+              value={recruit_deadline}
               min={today_str}
-              onChange={(e) => set_deadline(e.target.value)}
+              onChange={(e) => set_recruit_deadline(e.target.value)}
             />
           </div>
         </section>

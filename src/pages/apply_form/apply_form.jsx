@@ -81,10 +81,11 @@ export default function ApplyForm() {
   const [applicant_name, set_applicant_name] = useState("지원서");
 
   const [applicant_info, set_applicant_info] = useState({
-    dept: "",
+    major: "",
     studentId: "",
     name: "",
     phone: "",
+    email: "",
   });
 
   const [application_form_list, set_application_form_list] = useState([]); // [{questionId, orderNum, questionContent, answerContent}]
@@ -118,71 +119,74 @@ export default function ApplyForm() {
 
       if (seq !== request_seq.current) return;
 
+      // 새 API: applicantName, applicantEmail, applicantPhone, studentId, major, status, answers[]
+      // 구 API: applicantInfo.name 등 — fallback으로 지원
       const applicant =
         data?.applicantInfo ?? data?.applicant ?? data?.applicant_info ?? null;
 
-      const application_form =
-        data?.applicationForm ??
-        data?.application_form ??
-        data?.application_form_list ??
-        data?.form ??
-        data?.application ??
-        data?.applicationForms ??
-        data?.application_forms ??
-        [];
-
-      const name = applicant?.name ?? "";
-      const student_id = applicant?.studentId ?? applicant?.student_id ?? "";
-      const department = applicant?.department ?? "";
+      const name =
+        data?.applicantName ?? applicant?.name ?? "";
+      const student_id =
+        data?.studentId ?? applicant?.studentId ?? applicant?.student_id ?? "";
+      const major =
+        data?.major ?? applicant?.department ?? applicant?.major ?? "";
       const phone_number =
-        applicant?.phoneNumber ?? applicant?.phone_number ?? "";
+        data?.applicantPhone ?? applicant?.phoneNumber ?? applicant?.phone_number ?? "";
+      const email =
+        data?.applicantEmail ?? applicant?.email ?? "";
 
       set_applicant_info({
-        dept: String(department || ""),
+        major: String(major || ""),
         studentId: String(student_id || ""),
         name: String(name || ""),
         phone: String(phone_number || ""),
+        email: String(email || ""),
       });
 
       set_applicant_name(name ? `${name}님의 지원서` : "지원서");
 
-      const normalized_forms = (
-        Array.isArray(application_form) ? application_form : []
-      )
-        .map((q) => ({
-          questionId: q?.questionId ?? q?.question_id ?? q?.id ?? null,
-          orderNum: q?.orderNum ?? q?.order_num ?? q?.order ?? null,
-          questionContent: String(
-            q?.questionContent ?? q?.question_content ?? q?.content ?? "",
-          ),
-          answerContent: String(
-            q?.answerContent ?? q?.answer_content ?? q?.answer ?? "",
-          ),
-        }))
-        .filter((q) => normalize_content(q.questionContent).length > 0)
-        .sort(
-          (a, b) =>
-            (Number(a.orderNum ?? 0) || 0) - (Number(b.orderNum ?? 0) || 0),
-        );
+      // 새 API: answers: [{ questionId, content }]
+      // 구 API: applicationForm: [{ questionContent, answerContent, ... }]
+      const answers_new = data?.answers ?? [];
+      const application_form_old =
+        data?.applicationForm ??
+        data?.application_form ??
+        data?.applicationForms ??
+        [];
+
+      let normalized_forms;
+      if (Array.isArray(answers_new) && answers_new.length > 0) {
+        normalized_forms = answers_new.map((q, idx) => ({
+          questionId: q?.questionId ?? idx,
+          orderNum: idx,
+          questionContent: String(q?.content ?? ""),
+          answerContent: String(q?.answer ?? ""),
+        })).filter((q) => normalize_content(q.questionContent).length > 0);
+      } else {
+        normalized_forms = (Array.isArray(application_form_old) ? application_form_old : [])
+          .map((q) => ({
+            questionId: q?.questionId ?? q?.id ?? null,
+            orderNum: q?.orderNum ?? q?.order ?? null,
+            questionContent: String(q?.questionContent ?? q?.content ?? ""),
+            answerContent: String(q?.answerContent ?? q?.answer ?? ""),
+          }))
+          .filter((q) => normalize_content(q.questionContent).length > 0)
+          .sort((a, b) => (Number(a.orderNum ?? 0) || 0) - (Number(b.orderNum ?? 0) || 0));
+      }
 
       set_application_form_list(normalized_forms);
 
       const server_status =
-        applicant?.status ?? data?.status ?? data?.applicationStatus;
+        data?.status ?? applicant?.status ?? data?.applicationStatus;
       setDecision(normalize_status(server_status));
 
-      // ✅ 스웨거 예시: data.fileKeyUrl 로 내려오는 케이스 최우선
       const fk =
         data?.fileKeyUrl ??
         data?.file_key_url ??
-        applicant?.fileKeyUrl ??
-        applicant?.file_key_url ??
-        applicant?.fileKey ??
-        applicant?.file_key ??
-        applicant?.filekey ??
         data?.fileKey ??
         data?.file_key ??
-        data?.filekey ??
+        applicant?.fileKey ??
+        applicant?.file_key ??
         "";
 
       set_file_key(String(fk || ""));
@@ -283,7 +287,7 @@ export default function ApplyForm() {
                 type="button"
                 className="back-btn"
                 aria-label="뒤로가기"
-                onClick={() => navigate(club_id ? `/applicant_manage/${club_id}` : "/mypage")}
+                onClick={() => navigate(club_id ? `/admin/applicant_manage/${club_id}` : "/admin/dashboard")}
               >
                 <svg
                   className="icon"
@@ -319,7 +323,7 @@ export default function ApplyForm() {
                 type="button"
                 className="back-btn"
                 aria-label="뒤로가기"
-                onClick={() => navigate(club_id ? `/applicant_manage/${club_id}` : "/mypage")}
+                onClick={() => navigate(club_id ? `/admin/applicant_manage/${club_id}` : "/admin/dashboard")}
               >
                 <svg
                   className="icon"
@@ -387,49 +391,20 @@ export default function ApplyForm() {
               ) : null}
             </p>
 
-            <label className="field_label" htmlFor="dept">
-              학과
-            </label>
-            <input
-              id="dept"
-              className="field_input"
-              value={applicant_info.dept}
-              disabled
-              readOnly
-            />
+            <label className="field_label" htmlFor="uname">이름</label>
+            <input id="uname" className="field_input" value={applicant_info.name} disabled readOnly />
 
-            <label className="field_label" htmlFor="sid">
-              학번
-            </label>
-            <input
-              id="sid"
-              className="field_input"
-              value={applicant_info.studentId}
-              disabled
-              readOnly
-            />
+            <label className="field_label" htmlFor="email">이메일</label>
+            <input id="email" className="field_input" value={applicant_info.email} disabled readOnly />
 
-            <label className="field_label" htmlFor="uname">
-              이름
-            </label>
-            <input
-              id="uname"
-              className="field_input"
-              value={applicant_info.name}
-              disabled
-              readOnly
-            />
+            <label className="field_label" htmlFor="phone">전화번호</label>
+            <input id="phone" className="field_input" value={applicant_info.phone} disabled readOnly />
 
-            <label className="field_label" htmlFor="phone">
-              전화번호
-            </label>
-            <input
-              id="phone"
-              className="field_input"
-              value={applicant_info.phone}
-              disabled
-              readOnly
-            />
+            <label className="field_label" htmlFor="sid">학번</label>
+            <input id="sid" className="field_input" value={applicant_info.studentId} disabled readOnly />
+
+            <label className="field_label" htmlFor="major">학과</label>
+            <input id="major" className="field_input" value={applicant_info.major} disabled readOnly />
 
             {/* ✅ 지원서 문항/답변 전체 렌더링 */}
             {(application_form_list || []).map((q, idx) => {

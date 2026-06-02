@@ -7,7 +7,7 @@ import "./club.css";
 import {
   fetch_public_club,
   fetch_owner_club_detail,
-  fetch_member_club_apply,
+  create_application_session,
   is_logged_in,
   fetch_owner_managed_clubs,
   fetch_my_applications,
@@ -106,12 +106,10 @@ export default function ClubPage() {
   }, [club]);
 
   const can_show_apply = useMemo(() => {
-    if (is_guest) return false;
     if (is_owner) return false;
-    if (is_applied) return false;
-    if (!is_recruitment_started) return false; // ✅ 추가
+    if (!is_recruitment_started) return false;
     return true;
-  }, [is_guest, is_owner, is_applied, is_recruitment_started]);
+  }, [is_owner, is_recruitment_started]);
 
   useEffect(() => {
     const load_owner_and_applied = async () => {
@@ -242,15 +240,10 @@ export default function ClubPage() {
     if (!can_show_apply) return;
 
     try {
-      const data = await fetch_member_club_apply(id);
-      nav("/apply_form_submit", {
-        state: {
-          club,
-          applyData: data,
-        },
-      });
+      await create_application_session(id);
+      nav("/apply_form_submit", { state: { clubId: id, club } });
     } catch (err) {
-      set_error_msg(err.message || "지원 정보를 불러오지 못했습니다.");
+      set_error_msg(err.message || "지원 세션 생성에 실패했습니다.");
     }
   };
 

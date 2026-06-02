@@ -292,6 +292,11 @@ export async function apiLogout() {
   return res;
 }
 
+export async function fetch_auth_me() {
+  const res = await apiJson("/auth/me", { method: "GET" });
+  return res.data;
+}
+
 // ===== 공개 클럽 (guest / member / owner 공용) =====
 export async function fetch_public_clubs() {
   const res = await apiJson("/public/clubs", { method: "GET" });
@@ -300,6 +305,24 @@ export async function fetch_public_clubs() {
 
 export async function fetch_public_club(club_id) {
   const res = await apiJson(`/public/clubs/${club_id}`, { method: "GET" });
+  return res.data;
+}
+
+export async function fetch_public_application_form(club_id) {
+  const res = await apiJson(`/public/clubs/${club_id}/application-form`, { method: "GET" });
+  return Array.isArray(res.data) ? res.data : [];
+}
+
+export async function create_application_session(club_id) {
+  const res = await apiJson(`/public/clubs/${club_id}/application/session`, { method: "POST" });
+  return res.data;
+}
+
+export async function submit_public_application(club_id, payload) {
+  const res = await apiJson(`/public/clubs/${club_id}/applications`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
   return res.data;
 }
 
@@ -445,18 +468,17 @@ export async function owner_upload_images(files = []) {
 
 // ===== OWNER: 동아리 등록 (JSON) =====
 export async function owner_register_club(payload) {
-  const res = await owner_fetch_json("/owner/club/register/club", {
+  const res = await owner_fetch_json("/owner/clubs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      uploadedImageFileNames: payload?.uploadedImageFileNames || [],
       name: payload?.name ?? "",
-      title: payload?.title ?? "",
-      president: payload?.president ?? "",
-      contact: payload?.contact ?? "",
-      recruitingEnd: payload?.recruitingEnd ?? null,
-      clubRoom: payload?.clubRoom ?? "",
+      presidentName: payload?.presidentName ?? "",
+      presidentPhone: payload?.presidentPhone ?? "",
+      recruitDeadline: payload?.recruitDeadline ?? null,
       description: payload?.description ?? "",
+      type: payload?.type ?? "CENTRAL",
+      uploadedImageFileNames: payload?.uploadedImageFileNames ?? [],
     }),
   });
 
@@ -465,7 +487,7 @@ export async function owner_register_club(payload) {
 
 // ===== OWNER: 동아리 상세 조회 (GET) =====
 export async function fetch_owner_club_detail(club_id) {
-  const res = await owner_fetch_json(`/owner/club/${club_id}`, {
+  const res = await owner_fetch_json(`/owner/clubs/${club_id}`, {
     method: "GET",
   });
   return res.data || null;
@@ -475,25 +497,29 @@ export const owner_get_club = fetch_owner_club_detail;
 
 // ===== OWNER: 동아리 수정 (PUT) =====
 export async function owner_update_club(club_id, payload) {
-  const res = await owner_fetch_json(`/owner/club/${club_id}`, {
+  const res = await owner_fetch_json(`/owner/clubs/${club_id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      name: payload?.name ?? "",
+      presidentName: payload?.presidentName ?? "",
+      presidentPhone: payload?.presidentPhone ?? "",
+      recruitDeadline: payload?.recruitDeadline ?? null,
+      description: payload?.description ?? "",
+      type: payload?.type ?? "CENTRAL",
+      uploadedImageFileNames: payload?.uploadedImageFileNames ?? [],
+    }),
   });
   return res.data || null;
 }
 
-// ===== OWNER: 모집 시작(토글) =====
-export async function owner_start_recruitment(club_id) {
-  return apiJson(`/owner/club/${club_id}/start-recruitment`, {
-    method: "POST",
+// ===== OWNER: 모집 기간 설정 =====
+export async function owner_set_recruitment(club_id, { startDate, endDate }) {
+  const res = await apiJson(`/owner/clubs/${club_id}/recruitments`, {
+    method: "PUT",
+    body: JSON.stringify({ startDate, endDate }),
   });
-}
-
-export async function owner_close_recruitment(club_id) {
-  return apiJson(`/owner/club/${club_id}/close-recruitment`, {
-    method: "POST",
-  });
+  return res.data;
 }
 
 // ===== OWNER: 지원자 목록 =====
@@ -520,9 +546,9 @@ export async function owner_update_club_questions(club_id, questions = []) {
 }
 
 // ===== OWNER: 지원자 상세 조회 =====
-export async function fetch_owner_applicant_detail(club_id, club_member_id) {
+export async function fetch_owner_applicant_detail(club_id, application_id) {
   const res = await apiJson(
-    `/owner/club/${club_id}/applicants/${club_member_id}`,
+    `/owner/clubs/${club_id}/applications/${application_id}`,
     { method: "GET" },
   );
   return res.data;
@@ -531,14 +557,14 @@ export async function fetch_owner_applicant_detail(club_id, club_member_id) {
 // ===== OWNER: 지원자 상태 변경 =====
 export async function owner_update_applicant_status(
   club_id,
-  club_member_id,
+  application_id,
   new_status,
 ) {
   const res = await apiJson(
-    `/owner/club/${club_id}/applicants/${club_member_id}/status`,
+    `/owner/clubs/${club_id}/applications/status`,
     {
-      method: "PATCH",
-      body: JSON.stringify({ newStatus: new_status }),
+      method: "PUT",
+      body: JSON.stringify([{ applicationId: Number(application_id), status: new_status }]),
     },
   );
   return res;

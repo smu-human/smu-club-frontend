@@ -1,8 +1,9 @@
 // src/pages/admin_apply_form_edit/admin_apply_form_edit.jsx
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/globals.css";
 import "./admin_apply_form_edit.css";
+import { fetch_owner_club_questions, owner_update_club_questions } from "../../lib/api";
 
 function normalize_content(s) {
   return String(s || "")
@@ -10,35 +11,36 @@ function normalize_content(s) {
     .trim();
 }
 
-const DUMMY_QUESTIONS = [
-  {
-    questionId: "d1",
-    orderNum: 0,
-    content: "지원 동기를 작성해주세요.",
-    type: "text",
-  },
-  {
-    questionId: "d2",
-    orderNum: 1,
-    content: "본인의 장점과 단점을 간략히 소개해주세요.",
-    type: "text",
-  },
-  {
-    questionId: "d3",
-    orderNum: 2,
-    content: "동아리 활동을 통해 이루고 싶은 목표가 있다면 작성해주세요.",
-    type: "text",
-  },
-];
-
 export default function AdminApplyFormEdit() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [questions, setQuestions] = useState(DUMMY_QUESTIONS);
+  const [questions, setQuestions] = useState([]);
   const [adding, setAdding] = useState(false);
   const [newQuestion, setNewQuestion] = useState("");
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error_msg, set_error_msg] = useState("");
+
+  useEffect(() => {
+    if (!id) { setLoading(false); return; }
+    fetch_owner_club_questions(id)
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        setQuestions(
+          list
+            .map((q) => ({
+              questionId: q.questionId ?? q.id ?? `q-${Math.random()}`,
+              orderNum: q.orderNum ?? 0,
+              content: q.content ?? "",
+              type: "text",
+            }))
+            .sort((a, b) => a.orderNum - b.orderNum),
+        );
+      })
+      .catch((e) => set_error_msg(e?.message || "질문을 불러오지 못했습니다."))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   const addQuestion = () => {
     const content = normalize_content(newQuestion);
@@ -89,12 +91,25 @@ export default function AdminApplyFormEdit() {
     );
   };
 
-  const onSave = () => {
+  const onSave = async () => {
+    if (!id || saving) return;
     setSaving(true);
-    setTimeout(() => {
-      alert("저장되었습니다. (더미)");
+    try {
+      const payload = questions.map((q, idx) => ({
+        questionId: typeof q.questionId === "string" && q.questionId.startsWith("local-")
+          ? undefined
+          : Number(q.questionId) || undefined,
+        content: normalize_content(q.content),
+        orderNum: idx,
+        isRequired: true,
+      }));
+      await owner_update_club_questions(id, payload);
+      alert("저장되었습니다.");
+    } catch (e) {
+      alert(e?.message || "저장에 실패했습니다.");
+    } finally {
       setSaving(false);
-    }, 400);
+    }
   };
 
   const sorted_questions = [...questions].sort(
@@ -134,6 +149,7 @@ export default function AdminApplyFormEdit() {
             <h2 className="afe_title">질문 관리</h2>
             <div className="afe_card">
               {error_msg && <p className="afe_error">{error_msg}</p>}
+              {loading && <p className="afe_desc">불러오는 중...</p>}
               <p className="afe_desc">
                 지원자에게 보여줄 질문을 추가·수정·삭제하세요.
               </p>
