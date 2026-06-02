@@ -69,9 +69,9 @@ export default function ApplicantManage() {
 
       const mapped = list
         .map((a) => ({
-          clubMemberId: a?.clubMemberId ?? a?.club_member_id ?? a?.id ?? null,
+          clubMemberId: a?.id ?? a?.applicationId ?? a?.clubMemberId ?? a?.club_member_id ?? null,
           memberId: a?.memberId ?? a?.member_id ?? null,
-          name: a?.name ?? "",
+          name: a?.applicantName ?? a?.name ?? "",
           studentId: a?.studentId ?? a?.student_id ?? "",
           appliedAt: a?.appliedAt ?? a?.applied_at ?? null,
           status: a?.status ? normalize_status(a.status) : null,

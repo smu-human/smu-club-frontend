@@ -5,16 +5,7 @@ import "../../styles/globals.css";
 import "./admin_club_info_edit.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
-
-// TODO: API 연결 시 실제 fetch 로직으로 교체
-const MOCK_DATA = {
-  name: "예시 동아리",
-  title: "동아리를 소개하는 한 줄 문구",
-  president: "홍길동",
-  contact: "01012345678",
-  recruitingEnd: "",
-  description: "",
-};
+import { fetch_owner_club_detail, owner_update_club, owner_upload_images } from "../../lib/api";
 
 export default function AdminClubInfoEdit() {
   const navigate = useNavigate();
@@ -24,12 +15,12 @@ export default function AdminClubInfoEdit() {
 
   const today_str = new Date().toISOString().slice(0, 10);
 
-  const [club_name, set_club_name] = useState(MOCK_DATA.name);
-  const [club_one_line, set_club_one_line] = useState(MOCK_DATA.title);
-  const [leader_name, set_leader_name] = useState(MOCK_DATA.president);
-  const [phone, set_phone] = useState(MOCK_DATA.contact);
-  const [deadline, set_deadline] = useState(MOCK_DATA.recruitingEnd);
-  const [editor_html] = useState(MOCK_DATA.description);
+  const [club_name, set_club_name] = useState("");
+  const [club_one_line, set_club_one_line] = useState("");
+  const [leader_name, set_leader_name] = useState("");
+  const [phone, set_phone] = useState("");
+  const [deadline, set_deadline] = useState("");
+  const [editor_html, set_editor_html] = useState("");
 
   const [images, set_images] = useState([]); // File[]
   const [thumb_urls, set_thumb_urls] = useState([]); // ObjectURL[]
@@ -65,6 +56,23 @@ export default function AdminClubInfoEdit() {
       clearTimeout(t2);
     };
   }, []);
+
+  // 클럽 데이터 로드
+  useEffect(() => {
+    if (!clubId) return;
+    fetch_owner_club_detail(clubId)
+      .then((d) => {
+        if (!d) return;
+        set_club_name(d.name ?? "");
+        set_leader_name(d.presidentName ?? "");
+        set_phone(d.presidentPhone ?? "");
+        const dl = d.recruitDeadline ?? d.endDate ?? "";
+        set_deadline(dl ? String(dl).slice(0, 10) : "");
+        const desc = d.description ?? "";
+        set_editor_html(desc);
+      })
+      .catch(() => {});
+  }, [clubId]);
 
   // 초기 프리뷰 동기화
   useEffect(() => {
@@ -135,30 +143,38 @@ export default function AdminClubInfoEdit() {
     set_thumb_urls((prev) => reorder(prev));
   };
 
-  const on_save = () => {
+  const on_save = async () => {
     if (is_saving) return;
     if (!deadline) {
       alert("모집 마감일을 설정해주세요.");
       return;
     }
-    const intro_html = editorRef.current?.getInstance().getHTML() || "";
-    console.log("[AdminClubInfoEdit] mock save:", {
-      clubId,
-      club_name,
-      club_one_line,
-      leader_name,
-      phone,
-      deadline,
-      description: intro_html,
-      images,
-    });
     set_is_saving(true);
-    // TODO: API 연결 후 실제 저장 로직으로 교체
-    setTimeout(() => {
-      set_is_saving(false);
-      alert("저장 완료 (API 미연결 — 콘솔 확인)");
+    try {
+      let uploadedImageFileNames = [];
+      if (images.length > 0) {
+        uploadedImageFileNames = await owner_upload_images(images);
+      }
+
+      const description_html = editorRef.current?.getInstance().getHTML() || "";
+
+      await owner_update_club(clubId, {
+        name: club_name,
+        presidentName: leader_name,
+        presidentPhone: phone,
+        recruitDeadline: deadline || null,
+        description: description_html,
+        type: "CENTRAL",
+        uploadedImageFileNames,
+      });
+
+      alert("저장되었습니다.");
       navigate("/admin/dashboard");
-    }, 300);
+    } catch (e) {
+      alert(e?.message || "저장에 실패했습니다.");
+    } finally {
+      set_is_saving(false);
+    }
   };
 
   return (

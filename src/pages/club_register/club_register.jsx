@@ -5,6 +5,7 @@ import "../../styles/globals.css";
 import "./club_register.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
+import { owner_register_club, owner_upload_images } from "../../lib/api";
 
 export default function ClubRegister() {
   const navigate = useNavigate();
@@ -127,18 +128,38 @@ export default function ClubRegister() {
     set_thumb_urls((prev) => reorder(prev));
   };
 
-  const on_save = () => {
+  const on_save = async () => {
     if (is_saving) return;
     if (!deadline) {
       alert("모집 마감일을 설정해주세요.");
       return;
     }
     set_is_saving(true);
-    // 더미 저장: API 연결 전
-    setTimeout(() => {
-      set_is_saving(false);
+    try {
+      let uploadedImageFileNames = [];
+      if (images.length > 0) {
+        uploadedImageFileNames = await owner_upload_images(images);
+      }
+
+      const description_html = editorRef.current?.getInstance().getHTML() || "";
+
+      await owner_register_club({
+        name: club_name,
+        presidentName: leader_name,
+        presidentPhone: phone,
+        recruitDeadline: deadline || null,
+        description: description_html,
+        type: "CENTRAL",
+        uploadedImageFileNames,
+      });
+
+      alert("동아리가 등록되었습니다.");
       navigate("/admin/dashboard");
-    }, 400);
+    } catch (e) {
+      alert(e?.message || "등록에 실패했습니다.");
+    } finally {
+      set_is_saving(false);
+    }
   };
 
   return (

@@ -21,8 +21,10 @@ import AdminApplyFormEdit from "../pages/admin_apply_form_edit/admin_apply_form_
 import ClubInfoEdit from "../pages/club_info_edit/club_info_edit.jsx";
 import AdminClubInfoEdit from "../pages/admin_club_info_edit/admin_club_info_edit.jsx";
 import AdminApplicantManage from "../pages/admin_applicant_manage/admin_applicant_manage.jsx";
+import DevNav from "../pages/dev_nav/dev_nav.jsx";
 
 export const router = createBrowserRouter([
+  { path: "/dev", element: <DevNav /> },
   { path: "/", element: <HomePage /> },
   { path: "/admin/login", element: <AdminLoginPage /> },
   { path: "/admin/dashboard", element: <AdminDashboard /> },
