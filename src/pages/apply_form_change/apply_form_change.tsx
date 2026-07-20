@@ -1,4 +1,4 @@
-// src/pages/apply_form_change/apply_form_change.jsx (전체 교체)
+// src/pages/apply_form_change/apply_form_change.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/globals.css";
@@ -13,21 +13,38 @@ import {
   member_issue_application_download_url,
 } from "../../lib/api";
 
-function unwrap_api(res) {
-  if (res && typeof res === "object") {
-    if (res.data != null && typeof res.data === "object") return res.data;
-    if (res.result != null && typeof res.result === "object") return res.result;
-  }
-  return res;
+interface MemberInfo {
+  memberId: string;
+  studentId: string;
+  name: string;
+  phone: string;
+  department: string;
 }
 
-function normalize_content(s) {
+interface LocalQuestion {
+  questionId: string | number | null;
+  orderNum: number;
+  questionContent: string;
+  answerContent: string;
+  type: string;
+}
+
+function unwrap_api(res: unknown): Record<string, unknown> {
+  if (res && typeof res === "object") {
+    const ro = res as Record<string, unknown>;
+    if (ro.data != null && typeof ro.data === "object") return ro.data as Record<string, unknown>;
+    if (ro.result != null && typeof ro.result === "object") return ro.result as Record<string, unknown>;
+  }
+  return res as Record<string, unknown>;
+}
+
+function normalize_content(s: unknown): string {
   return String(s || "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function is_file_question_content(content) {
+function is_file_question_content(content: string): boolean {
   const t = normalize_content(content).toLowerCase();
   if (!t) return false;
 
@@ -47,13 +64,13 @@ function is_file_question_content(content) {
   return false;
 }
 
-function infer_input_type(question_content) {
+function infer_input_type(question_content: string): string {
   const t = normalize_content(question_content).toLowerCase();
   if (t.includes("성별")) return "gender";
   return "text";
 }
 
-function infer_gender_value(answer_content) {
+function infer_gender_value(answer_content: string): string {
   const v = normalize_content(answer_content);
   if (v === "남" || v === "남성" || v.toLowerCase() === "male") return "male";
   if (v === "여" || v === "여성" || v.toLowerCase() === "female")
@@ -62,12 +79,12 @@ function infer_gender_value(answer_content) {
   return "other";
 }
 
-function is_http_url(v) {
+function is_http_url(v: unknown): boolean {
   const s = String(v || "").trim();
   return s.startsWith("http://") || s.startsWith("https://");
 }
 
-function try_decode_uri_component(s) {
+function try_decode_uri_component(s: string): string {
   try {
     return decodeURIComponent(s);
   } catch {
@@ -75,7 +92,7 @@ function try_decode_uri_component(s) {
   }
 }
 
-function with_cache_bust(url) {
+function with_cache_bust(url: string): string {
   if (!url) return "";
   const s = String(url);
   const t = Date.now();
@@ -83,7 +100,7 @@ function with_cache_bust(url) {
 }
 
 // fileKey 형식이 "uuid_원본파일명(인코딩)" 같이 오는 케이스면 원본명 추정
-function infer_original_name_from_key(file_key) {
+function infer_original_name_from_key(file_key: string): string {
   if (!file_key) return "";
   const s = String(file_key);
 
@@ -108,7 +125,7 @@ function infer_original_name_from_key(file_key) {
   return try_decode_uri_component(last);
 }
 
-function pick_filename_from_content_disposition(cd) {
+function pick_filename_from_content_disposition(cd: string): string {
   if (!cd) return "";
 
   const s = String(cd);
@@ -128,14 +145,14 @@ function pick_filename_from_content_disposition(cd) {
 
 export default function ApplyFormChange() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const club_id = useMemo(() => (id == null ? null : String(id)), [id]);
 
   const [loading, set_loading] = useState(true);
   const [saving, set_saving] = useState(false);
   const [error_msg, set_error_msg] = useState("");
 
-  const [member_info, set_member_info] = useState({
+  const [member_info, set_member_info] = useState<MemberInfo>({
     memberId: "",
     studentId: "",
     name: "",
@@ -143,7 +160,7 @@ export default function ApplyFormChange() {
     department: "",
   });
 
-  const [questions, set_questions] = useState([]);
+  const [questions, set_questions] = useState<LocalQuestion[]>([]);
   const [has_file_upload, set_has_file_upload] = useState(false);
 
   // 백엔드에서 fileKeyUrl로 내려오는 경우가 있어 통합 관리
@@ -153,7 +170,7 @@ export default function ApplyFormChange() {
   const [file_url, set_file_url] = useState("");
   const [file_url_loading, set_file_url_loading] = useState(false);
 
-  const file_input_ref = useRef(null);
+  const file_input_ref = useRef<HTMLInputElement>(null);
   const latest_file_key_ref = useRef(""); // ✅ 추가
 
   const load = async () => {
@@ -167,17 +184,17 @@ export default function ApplyFormChange() {
     set_error_msg("");
 
     try {
-      const raw = await fetch_application_for_update(club_id);
+      const raw: unknown = await fetch_application_for_update(club_id);
       const data = unwrap_api(raw);
 
       console.log("[apply change] full data:", data);
 
       set_member_info({
-        memberId: data?.memberId ?? "",
-        studentId: data?.studentId ?? "",
-        name: data?.name ?? "",
-        phone: data?.phone ?? "",
-        department: data?.department ?? "",
+        memberId: String(data?.memberId ?? ""),
+        studentId: String(data?.studentId ?? ""),
+        name: String(data?.name ?? ""),
+        phone: String(data?.phone ?? ""),
+        department: String(data?.department ?? ""),
       });
 
       // ✅ 스웨거 응답처럼 fileKeyUrl로 내려오는 케이스 대응
@@ -200,21 +217,25 @@ export default function ApplyFormChange() {
         data?.qna ??
         [];
 
-      const list = (Array.isArray(raw_qna) ? raw_qna : [])
-        .map((q) => ({
-          questionId: q?.questionId ?? q?.id ?? null,
-          orderNum:
-            typeof q?.orderNum === "number"
-              ? q.orderNum
-              : typeof q?.orderNumber === "number"
-                ? q.orderNumber
-                : 0,
-          questionContent: q?.questionContent ?? q?.content ?? "",
-          answerContent: q?.answerContent ?? q?.answer ?? "",
-        }))
-        .filter((q) => q.questionId != null)
-        .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0))
-        .map((q) => {
+      const list: LocalQuestion[] = (Array.isArray(raw_qna) ? raw_qna : [])
+        .map((q: unknown) => {
+          const qo = q as Record<string, unknown>;
+          return {
+            questionId: (qo?.questionId ?? qo?.id ?? null) as string | number | null,
+            orderNum:
+              typeof qo?.orderNum === "number"
+                ? qo.orderNum
+                : typeof qo?.orderNumber === "number"
+                  ? qo.orderNumber as number
+                  : 0,
+            questionContent: String(qo?.questionContent ?? qo?.content ?? ""),
+            answerContent: String(qo?.answerContent ?? qo?.answer ?? ""),
+            type: "text",
+          };
+        })
+        .filter((q: LocalQuestion) => q.questionId != null)
+        .sort((a: LocalQuestion, b: LocalQuestion) => (a.orderNum ?? 0) - (b.orderNum ?? 0))
+        .map((q: LocalQuestion) => {
           const qc = normalize_content(q.questionContent);
           const is_file = is_file_question_content(qc);
           const type = is_file ? "file" : infer_input_type(qc);
@@ -237,8 +258,8 @@ export default function ApplyFormChange() {
       }
 
       set_questions(list.filter((q) => q.type !== "file"));
-    } catch (e) {
-      set_error_msg(e?.message || "지원서 정보를 불러오지 못했습니다.");
+    } catch (e: unknown) {
+      set_error_msg((e as Error & { code?: string })?.message || "지원서 정보를 불러오지 못했습니다.");
       set_member_info({
         department: "",
         memberId: "",
@@ -285,7 +306,7 @@ export default function ApplyFormChange() {
       set_file_url_loading(true);
       try {
         // ✅ file_key(오브젝트 키)로 다운로드 URL 발급
-        const raw = await member_issue_application_download_url(file_key);
+        const raw: unknown = await member_issue_application_download_url(file_key);
         const data = unwrap_api(raw);
 
         const url =
@@ -293,10 +314,10 @@ export default function ApplyFormChange() {
           data?.presignedUrl ??
           data?.url ??
           data?.downloadUrl ??
-          raw?.preSignedUrl ??
-          raw?.presignedUrl ??
-          raw?.url ??
-          raw?.downloadUrl ??
+          (raw as Record<string, unknown>)?.preSignedUrl ??
+          (raw as Record<string, unknown>)?.presignedUrl ??
+          (raw as Record<string, unknown>)?.url ??
+          (raw as Record<string, unknown>)?.downloadUrl ??
           "";
 
         set_file_url(url ? with_cache_bust(String(url)) : "");
@@ -310,7 +331,7 @@ export default function ApplyFormChange() {
     run();
   }, [file_key, has_file_upload]);
 
-  const update_answer = (question_id, next_value) => {
+  const update_answer = (question_id: string | number | null, next_value: string) => {
     set_questions((prev) =>
       (prev || []).map((q) =>
         String(q.questionId) === String(question_id)
@@ -322,7 +343,7 @@ export default function ApplyFormChange() {
 
   const on_pick_file = () => file_input_ref.current?.click();
 
-  const on_file_change = async (e) => {
+  const on_file_change = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
@@ -330,11 +351,11 @@ export default function ApplyFormChange() {
     try {
       set_saving(true);
 
-      const issued_raw = await member_issue_application_upload_url(file);
+      const issued_raw: unknown = await member_issue_application_upload_url(file);
       const issued = unwrap_api(issued_raw);
 
-      const preSignedUrl = issued?.preSignedUrl ?? issued?.presignedUrl ?? "";
-      const fileName = issued?.fileName ?? issued?.filename ?? ""; // 서버가 내려주는 key/이름
+      const preSignedUrl = String(issued?.preSignedUrl ?? issued?.presignedUrl ?? "");
+      const fileName = String(issued?.fileName ?? issued?.filename ?? ""); // 서버가 내려주는 key/이름
 
       if (!preSignedUrl || !fileName) {
         throw new Error("업로드 URL 발급 응답이 올바르지 않습니다.");
@@ -355,8 +376,8 @@ export default function ApplyFormChange() {
       );
 
       alert("파일이 업로드되었습니다.");
-    } catch (err) {
-      alert(err?.message || "파일 업로드에 실패했습니다.");
+    } catch (err: unknown) {
+      alert((err as Error & { code?: string })?.message || "파일 업로드에 실패했습니다.");
     } finally {
       set_saving(false);
     }
@@ -395,8 +416,8 @@ export default function ApplyFormChange() {
 
       alert("수정이 완료되었습니다.");
       await load();
-    } catch (e) {
-      set_error_msg(e?.message || "저장에 실패했습니다.");
+    } catch (e: unknown) {
+      set_error_msg((e as Error & { code?: string })?.message || "저장에 실패했습니다.");
     } finally {
       set_saving(false);
     }
@@ -414,8 +435,8 @@ export default function ApplyFormChange() {
       await delete_application(club_id);
       alert("지원이 취소되었습니다.");
       navigate("/mypage");
-    } catch (e) {
-      alert(e?.message || "지원 취소에 실패했습니다.");
+    } catch (e: unknown) {
+      alert((e as Error & { code?: string })?.message || "지원 취소에 실패했습니다.");
     } finally {
       set_saving(false);
     }
@@ -577,7 +598,7 @@ export default function ApplyFormChange() {
                     const gender_value = infer_gender_value(q.answerContent);
 
                     return (
-                      <div key={q.questionId} className="q_item">
+                      <div key={String(q.questionId)} className="q_item">
                         <label className="field_label">
                           {idx + 1}. {q.questionContent || "질문"}
                         </label>

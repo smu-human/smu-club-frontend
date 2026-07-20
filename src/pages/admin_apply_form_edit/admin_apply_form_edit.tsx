@@ -1,11 +1,18 @@
-// src/pages/admin_apply_form_edit/admin_apply_form_edit.jsx
+// src/pages/admin_apply_form_edit/admin_apply_form_edit.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/globals.css";
 import "./admin_apply_form_edit.css";
 import { fetch_owner_club_questions, owner_update_club_questions } from "../../lib/api";
 
-function normalize_content(s) {
+interface LocalQuestion {
+  questionId: string | number;
+  orderNum: number;
+  content: string;
+  type: string;
+}
+
+function normalize_content(s: unknown): string {
   return String(s || "")
     .replace(/\s+/g, " ")
     .trim();
@@ -13,9 +20,9 @@ function normalize_content(s) {
 
 export default function AdminApplyFormEdit() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
 
-  const [questions, setQuestions] = useState([]);
+  const [questions, setQuestions] = useState<LocalQuestion[]>([]);
   const [adding, setAdding] = useState(false);
   const [newQuestion, setNewQuestion] = useState("");
   const [loading, setLoading] = useState(true);
@@ -25,20 +32,23 @@ export default function AdminApplyFormEdit() {
   useEffect(() => {
     if (!id) { setLoading(false); return; }
     fetch_owner_club_questions(id)
-      .then((data) => {
+      .then((data: unknown) => {
         const list = Array.isArray(data) ? data : [];
         setQuestions(
           list
-            .map((q) => ({
-              questionId: q.questionId ?? q.id ?? `q-${Math.random()}`,
-              orderNum: q.orderNum ?? 0,
-              content: q.content ?? "",
-              type: "text",
-            }))
-            .sort((a, b) => a.orderNum - b.orderNum),
+            .map((q: unknown) => {
+              const qo = q as Record<string, unknown>;
+              return {
+                questionId: (qo.questionId ?? qo.id ?? `q-${Math.random()}`) as string | number,
+                orderNum: (qo.orderNum as number) ?? 0,
+                content: (qo.content as string) ?? "",
+                type: "text",
+              };
+            })
+            .sort((a: LocalQuestion, b: LocalQuestion) => a.orderNum - b.orderNum),
         );
       })
-      .catch((e) => set_error_msg(e?.message || "질문을 불러오지 못했습니다."))
+      .catch((e: unknown) => set_error_msg((e as Error)?.message || "질문을 불러오지 못했습니다."))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -47,7 +57,7 @@ export default function AdminApplyFormEdit() {
     if (!content) return;
 
     setQuestions((prev) => {
-      const merged = [
+      const merged: LocalQuestion[] = [
         ...(prev || []),
         {
           questionId: `local-${crypto.randomUUID()}`,
@@ -56,8 +66,8 @@ export default function AdminApplyFormEdit() {
           type: "text",
         },
       ];
-      const out = [];
-      const seen = new Set();
+      const out: LocalQuestion[] = [];
+      const seen = new Set<string>();
       for (const q of merged) {
         const c = normalize_content(q.content);
         if (!c) continue;
@@ -73,7 +83,7 @@ export default function AdminApplyFormEdit() {
     setAdding(false);
   };
 
-  const removeQuestion = (qid) => {
+  const removeQuestion = (qid: string | number) => {
     setQuestions((prev) =>
       (prev || [])
         .filter((q) => String(q.questionId) !== String(qid))
@@ -81,7 +91,7 @@ export default function AdminApplyFormEdit() {
     );
   };
 
-  const updateQuestionContent = (qid, content) => {
+  const updateQuestionContent = (qid: string | number, content: string) => {
     setQuestions((prev) =>
       (prev || [])
         .map((q) =>
@@ -105,8 +115,8 @@ export default function AdminApplyFormEdit() {
       }));
       await owner_update_club_questions(id, payload);
       alert("저장되었습니다.");
-    } catch (e) {
-      alert(e?.message || "저장에 실패했습니다.");
+    } catch (e: unknown) {
+      alert((e as Error & { code?: string })?.message || "저장에 실패했습니다.");
     } finally {
       setSaving(false);
     }
@@ -157,7 +167,7 @@ export default function AdminApplyFormEdit() {
               {sorted_questions.length > 0 && (
                 <div className="afe_q_list">
                   {sorted_questions.map((q, idx) => (
-                    <div key={q.questionId} className="afe_q_item">
+                    <div key={String(q.questionId)} className="afe_q_item">
                       <label className="afe_field_label">{idx + 1}. 질문</label>
                       <textarea
                         className="afe_answer_area"
@@ -260,7 +270,7 @@ export default function AdminApplyFormEdit() {
               {sorted_questions.length > 0 && (
                 <div className="afe_preview_q_list">
                   {sorted_questions.map((q, idx) => (
-                    <div key={q.questionId} className="afe_preview_group">
+                    <div key={String(q.questionId)} className="afe_preview_group">
                       <span className="afe_preview_label">
                         {idx + 1}. {q.content || "질문 내용을 입력하세요"}
                       </span>

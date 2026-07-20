@@ -1,4 +1,4 @@
-// src/pages/club_edit/club_edit.jsx
+// src/pages/club_edit/club_edit.tsx
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/globals.css";
@@ -9,9 +9,9 @@ import { owner_register_club } from "../../lib/api";
 
 export default function ClubEdit() {
   const navigate = useNavigate();
-  const editorRef = useRef(null);
+  const editorRef = useRef<{ getInstance(): { getHTML(): string } } | null>(null);
 
-  const scroll_ref = useRef(null);
+  const scroll_ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const scroll_to_top = () => {
@@ -47,14 +47,15 @@ export default function ClubEdit() {
   const [recruit_deadline, set_recruit_deadline] = useState("");
   const [is_saving, set_is_saving] = useState(false);
 
-  // ✅ 실시간 “실제 렌더” 프리뷰
+  // 실시간 "실제 렌더" 프리뷰
   const [preview_html, set_preview_html] = useState("");
   const [show_live_preview, set_show_live_preview] = useState(true);
 
-  // ✅ 풀스크린(모달 느낌)
+  // 풀스크린(모달 느낌)
   const [is_editor_fullscreen, set_is_editor_fullscreen] = useState(false);
 
-  const preview_timer_ref = useRef(null);
+  const preview_timer_ref = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const sync_preview_from_editor = () => {
     if (preview_timer_ref.current) clearTimeout(preview_timer_ref.current);
 
@@ -79,7 +80,7 @@ export default function ClubEdit() {
 
   // ESC로 풀스크린 닫기
   useEffect(() => {
-    const on_key = (e) => {
+    const on_key = (e: KeyboardEvent) => {
       if (e.key === "Escape") set_is_editor_fullscreen(false);
     };
     window.addEventListener("keydown", on_key);
@@ -109,8 +110,8 @@ export default function ClubEdit() {
 
       alert("저장 완료");
       navigate("/mypage");
-    } catch (e) {
-      alert(e?.message || "저장 실패");
+    } catch (err) {
+      alert((err as Error & { code?: string })?.message || "저장 실패");
     } finally {
       set_is_saving(false);
     }
@@ -151,7 +152,7 @@ export default function ClubEdit() {
               className="field_input"
               type="text"
               value={club_name}
-              onChange={(e) => set_club_name(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_club_name(e.target.value)}
             />
 
             <label className="field_label">회장 이름</label>
@@ -159,7 +160,7 @@ export default function ClubEdit() {
               className="field_input"
               type="text"
               value={president_name}
-              onChange={(e) => set_president_name(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_president_name(e.target.value)}
             />
 
             <label className="field_label">회장 연락처 (- 없이 숫자만 입력)</label>
@@ -167,7 +168,7 @@ export default function ClubEdit() {
               className="field_input"
               type="tel"
               value={president_phone}
-              onChange={(e) => set_president_phone(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_president_phone(e.target.value)}
             />
 
             <label className="field_label">모집 마감일</label>
@@ -176,7 +177,7 @@ export default function ClubEdit() {
               type="date"
               value={recruit_deadline}
               min={today_str}
-              onChange={(e) => set_recruit_deadline(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_recruit_deadline(e.target.value)}
             />
           </div>
         </section>

@@ -1,4 +1,24 @@
-// src/lib/api.js
+// src/lib/api.ts
+
+import type {
+  ApiWrapper,
+  AuthMe,
+  AuthTokenData,
+  Club,
+  ClubListItem,
+  Question,
+  Applicant,
+  ApplicantDetail,
+  MyPageName,
+  MyPageProfile,
+  ManagedClub,
+  Application,
+  ApplicationResult,
+  UploadUrlItem,
+  ApiErrorData,
+  ClubPayload,
+} from "./types";
+import { DEV_MOCK, MOCK_ME, MOCK_CLUB, MOCK_CLUBS } from "./dev_mock";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api/v1";
 
@@ -8,31 +28,33 @@ const REFRESH_TOKEN_KEY = "smu_refresh_token";
 // ===== 세션 만료 이벤트(전역) =====
 const SESSION_EXPIRED_EVENT = "smu_session_expired_v1";
 
-function emit_session_expired(detail) {
+function emit_session_expired(detail: Record<string, unknown>): void {
   try {
     window.dispatchEvent(
       new CustomEvent(SESSION_EXPIRED_EVENT, { detail: detail || {} }),
     );
-  } catch {}
+  } catch {
+    // ignore
+  }
 }
 
-export function on_session_expired(handler) {
-  const h = (e) => handler?.(e?.detail || {});
+export function on_session_expired(handler: (detail: Record<string, unknown>) => void): () => void {
+  const h = (e: Event) => handler?.((e as CustomEvent<Record<string, unknown>>)?.detail || {});
   window.addEventListener(SESSION_EXPIRED_EVENT, h);
   return () => window.removeEventListener(SESSION_EXPIRED_EVENT, h);
 }
 
 // ===== 토큰 유틸 =====
-export function get_access_token() {
+function get_access_token(): string | null {
   return localStorage.getItem(ACCESS_TOKEN_KEY) || null;
 }
 
-export function get_refresh_token() {
+function get_refresh_token(): string | null {
   return localStorage.getItem(REFRESH_TOKEN_KEY) || null;
 }
 
-export function set_tokens(access_token, refresh_token) {
-  const norm = (t) => {
+function set_tokens(access_token: string | null | undefined, refresh_token: string | null | undefined): void {
+  const norm = (t: string | null | undefined): string | null => {
     if (!t) return null;
     const s = String(t).trim();
     return s.toLowerCase().startsWith("bearer ") ? s.slice(7).trim() : s;
@@ -45,25 +67,25 @@ export function set_tokens(access_token, refresh_token) {
   if (refresh) localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
 }
 
-export function clear_tokens() {
+export function clear_tokens(): void {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
 }
 
-export function is_logged_in() {
+export function is_logged_in(): boolean {
   return !!get_access_token();
 }
 
 // ===== 내부 공통 =====
-function resolve_url(path) {
+function resolve_url(path: string | URL): string | URL {
   if (typeof path === "string" && /^https?:\/\//.test(path)) return path;
   if (typeof path === "string") return `${API_BASE}${path}`;
   return path;
 }
 
-function make_init(init = {}, access_token) {
-  const merged_headers = {
-    ...(init.headers || {}),
+function make_init(init: RequestInit = {}, access_token: string | null): RequestInit {
+  const merged_headers: Record<string, string> = {
+    ...(init.headers as Record<string, string> || {}),
     ...(access_token ? { Authorization: `Bearer ${access_token}` } : {}),
   };
 
@@ -79,22 +101,20 @@ function make_init(init = {}, access_token) {
   };
 }
 
-function is_reissue_call(path) {
+function is_reissue_call(path: string | URL): boolean {
   const p = String(path || "");
   return p.includes("/public/auth/reissue");
 }
 
-// ✅ 401이라도 LOGIN_FAILED면 만료로 보지 않음
-function is_expired_response(res, data) {
-  if (data?.status === "FAIL" && data?.errorCode === "EXPIRED_TOKEN")
-    return true;
+function is_expired_response(res: Response, data: ApiErrorData | null): boolean {
+  if (data?.status === "FAIL" && data?.errorCode === "EXPIRED_TOKEN") return true;
   if (res?.status === 401 && data?.errorCode !== "LOGIN_FAILED") return true;
   return false;
 }
 
-let reissue_promise = null;
+let reissue_promise: Promise<{ access_token: string | null; refresh_token: string | null }> | null = null;
 
-async function do_reissue(prev_access_token) {
+async function do_reissue(prev_access_token: string | null): Promise<{ access_token: string | null; refresh_token: string | null }> {
   const refresh_token = get_refresh_token();
 
   if (!refresh_token) {
@@ -116,7 +136,7 @@ async function do_reissue(prev_access_token) {
     }),
   });
 
-  const re_data = await re_res.json().catch(() => null);
+  const re_data: ApiWrapper<AuthTokenData> | null = await re_res.json().catch(() => null);
 
   if (!re_res.ok || re_data?.status === "FAIL") {
     clear_tokens();
@@ -142,21 +162,22 @@ async function do_reissue(prev_access_token) {
   };
 }
 
-// ===== fetch 래퍼 (만료 시 reissue + 원요청 1회 재시도, 동시성 보호) =====
-export async function apiFetch(path, init = {}) {
+// ===== fetch 래퍼 =====
+export async function apiFetch(path: string | URL, init: RequestInit = {}): Promise<Response> {
   let access_token = get_access_token();
   const doFetch = () => fetch(resolve_url(path), make_init(init, access_token));
 
   let res = await doFetch();
 
-  let data = null;
+  let data: ApiErrorData | null = null;
   try {
     data = await res.clone().json();
-  } catch (_) {}
+  } catch {
+    // ignore
+  }
 
   if (is_reissue_call(path)) return res;
 
-  // ✅ 로그인 실패(학번/비번 불일치)는 reissue/세션만료 처리 금지
   if (data?.status === "FAIL" && data?.errorCode === "LOGIN_FAILED") return res;
 
   const expired = is_expired_response(res, data);
@@ -174,11 +195,12 @@ export async function apiFetch(path, init = {}) {
 
     res = await fetch(resolve_url(path), make_init(init, access_token));
 
-    // 재시도 후에도 만료/401이면 세션 종료 처리
-    let retry_data = null;
+    let retry_data: ApiErrorData | null = null;
     try {
       retry_data = await res.clone().json();
-    } catch (_) {}
+    } catch {
+      // ignore
+    }
 
     if (is_expired_response(res, retry_data)) {
       clear_tokens();
@@ -195,7 +217,8 @@ export async function apiFetch(path, init = {}) {
 
     return res;
   } catch (e) {
-    if (e?.code === "EXPIRED_TOKEN") {
+    const err = e as { code?: string };
+    if (err?.code === "EXPIRED_TOKEN") {
       clear_tokens();
       emit_session_expired({ reason: "expired_token_throw" });
     }
@@ -204,19 +227,19 @@ export async function apiFetch(path, init = {}) {
 }
 
 // ===== JSON 헬퍼 =====
-export async function apiJson(path, init) {
+export async function apiJson<T = unknown>(path: string | URL, init?: RequestInit): Promise<ApiWrapper<T>> {
   const res = await apiFetch(path, init);
-  const data = await res.json().catch(() => null);
+  const data: ApiWrapper<T> | null = await res.json().catch(() => null);
 
   if (!res.ok || data?.status === "FAIL") {
     const msg = data?.message || "요청에 실패했습니다.";
     const code = data?.errorCode;
-    const err = new Error(msg);
-    err.code = code || (res.status === 401 ? "UNAUTHORIZED" : "ERROR");
-    err.raw = data;
-    err.status = res.status;
+    const err = Object.assign(new Error(msg), {
+      code: code || (res.status === 401 ? "UNAUTHORIZED" : "ERROR"),
+      raw: data,
+      status: res.status,
+    });
 
-    // ✅ 여기서도 401 전부 만료로 치지 말고 LOGIN_FAILED는 제외
     if (
       err.code === "EXPIRED_TOKEN" ||
       (res.status === 401 && err.code !== "LOGIN_FAILED")
@@ -231,22 +254,21 @@ export async function apiJson(path, init) {
 
     throw err;
   }
-  return data;
+  return data!;
 }
 
-// ===== owner 전용 fetch (apiFetch 기반) - 토큰 reissue 포함 =====
-async function owner_fetch_json(path, init = {}) {
+// ===== owner 전용 fetch =====
+async function owner_fetch_json<T = unknown>(path: string | URL, init: RequestInit = {}): Promise<ApiWrapper<T>> {
   const res = await apiFetch(path, init);
-  const data = await res.json().catch(() => null);
+  const data: ApiWrapper<T> | null = await res.json().catch(() => null);
 
   if (!res.ok || data?.status === "FAIL") {
-    const err = new Error(data?.message || "요청에 실패했습니다.");
-    err.code =
-      data?.errorCode || (res.status === 401 ? "UNAUTHORIZED" : "ERROR");
-    err.status = res.status;
-    err.raw = data;
+    const err = Object.assign(new Error(data?.message || "요청에 실패했습니다."), {
+      code: data?.errorCode || (res.status === 401 ? "UNAUTHORIZED" : "ERROR"),
+      status: res.status,
+      raw: data,
+    });
 
-    // ✅ 401 전부 만료로 치지 말고 LOGIN_FAILED는 제외
     if (
       err.code === "EXPIRED_TOKEN" ||
       (res.status === 401 && err.code !== "LOGIN_FAILED")
@@ -262,12 +284,12 @@ async function owner_fetch_json(path, init = {}) {
     throw err;
   }
 
-  return data;
+  return data!;
 }
 
 // ===== 인증 =====
-export async function apiLogin({ studentId, password }) {
-  const data = await apiJson("/public/auth/login", {
+export async function apiLogin({ studentId, password }: { studentId: string; password: string }): Promise<ApiWrapper<{ accessToken: string; refreshToken: string }>> {
+  const data = await apiJson<{ accessToken: string; refreshToken: string }>("/public/auth/login", {
     method: "POST",
     body: JSON.stringify({ studentId, password }),
   });
@@ -279,47 +301,50 @@ export async function apiLogin({ studentId, password }) {
   return data;
 }
 
-export async function apiSignup({ studentId, password, phoneNumber }) {
+export async function apiSignup({ studentId, password, phoneNumber }: { studentId: string; password: string; phoneNumber: string }): Promise<ApiWrapper<unknown>> {
   return apiJson("/public/auth/signup", {
     method: "POST",
     body: JSON.stringify({ studentId, password, phoneNumber }),
   });
 }
 
-export async function apiLogout() {
+export async function apiLogout(): Promise<ApiWrapper<unknown>> {
   const res = await apiJson("/auth/logout", { method: "POST" });
   clear_tokens();
   return res;
 }
 
-export async function fetch_auth_me() {
-  const res = await apiJson("/auth/me", { method: "GET" });
+export async function fetch_auth_me(): Promise<AuthMe> {
+  if (DEV_MOCK) return MOCK_ME;
+  const res = await apiJson<AuthMe>("/auth/me", { method: "GET" });
   return res.data;
 }
 
-// ===== 공개 클럽 (guest / member / owner 공용) =====
-export async function fetch_public_clubs() {
-  const res = await apiJson("/public/clubs", { method: "GET" });
+// ===== 공개 클럽 =====
+export async function fetch_public_clubs(): Promise<ClubListItem[]> {
+  if (DEV_MOCK) return MOCK_CLUBS;
+  const res = await apiJson<ClubListItem[]>("/public/clubs", { method: "GET" });
   return res.data || [];
 }
 
-export async function fetch_public_club(club_id) {
-  const res = await apiJson(`/public/clubs/${club_id}`, { method: "GET" });
+export async function fetch_public_club(club_id: string | number): Promise<Club> {
+  if (DEV_MOCK) return { ...MOCK_CLUB, id: Number(club_id) || MOCK_CLUB.id };
+  const res = await apiJson<Club>(`/public/clubs/${club_id}`, { method: "GET" });
   return res.data;
 }
 
-export async function fetch_public_application_form(club_id) {
-  const res = await apiJson(`/public/clubs/${club_id}/application-form`, { method: "GET" });
+export async function fetch_public_application_form(club_id: string | number): Promise<Question[]> {
+  const res = await apiJson<Question[]>(`/public/clubs/${club_id}/application-form`, { method: "GET" });
   return Array.isArray(res.data) ? res.data : [];
 }
 
-export async function create_application_session(club_id) {
-  const res = await apiJson(`/public/clubs/${club_id}/application/session`, { method: "POST" });
+export async function create_application_session(club_id: string | number): Promise<unknown> {
+  const res = await apiJson<unknown>(`/public/clubs/${club_id}/application/session`, { method: "POST" });
   return res.data;
 }
 
-export async function submit_public_application(club_id, payload) {
-  const res = await apiJson(`/public/clubs/${club_id}/applications`, {
+export async function submit_public_application(club_id: string | number, payload: unknown): Promise<unknown> {
+  const res = await apiJson<unknown>(`/public/clubs/${club_id}/applications`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -327,95 +352,87 @@ export async function submit_public_application(club_id, payload) {
 }
 
 // ===== 멤버 =====
-export async function fetch_member_club_apply(club_id) {
-  const res = await apiJson(`/member/clubs/${club_id}/apply`, {
-    method: "GET",
-  });
+export async function fetch_mypage_name(): Promise<MyPageName> {
+  const res = await apiJson<MyPageName>("/member/mypage/name", { method: "GET" });
   return res.data;
 }
 
-export async function fetch_mypage_name() {
-  const res = await apiJson("/member/mypage/name", { method: "GET" });
+export async function fetch_mypage_profile(): Promise<MyPageProfile> {
+  const res = await apiJson<MyPageProfile>("/member/mypage/update", { method: "GET" });
   return res.data;
 }
 
-export async function fetch_mypage_profile() {
-  const res = await apiJson("/member/mypage/update", { method: "GET" });
-  return res.data;
-}
-
-export async function update_mypage_phone(newPhoneNumber) {
-  const res = await apiJson("/member/mypage/update/phone", {
+export async function update_mypage_phone(newPhoneNumber: string): Promise<unknown> {
+  const res = await apiJson<unknown>("/member/mypage/update/phone", {
     method: "PUT",
     body: JSON.stringify({ newPhoneNumber }),
   });
   return res.data;
 }
 
-export async function update_mypage_email(newEmail) {
-  const res = await apiJson("/member/mypage/update/email", {
+export async function update_mypage_email(newEmail: string): Promise<unknown> {
+  const res = await apiJson<unknown>("/member/mypage/update/email", {
     method: "PUT",
     body: JSON.stringify({ newEmail }),
   });
   return res.data;
 }
 
-export async function fetch_my_applications() {
-  const res = await apiJson("/member/mypage/applications", { method: "GET" });
+export async function update_mypage_password(currentPassword: string, newPassword: string): Promise<unknown> {
+  const res = await apiJson<unknown>("/member/mypage/update/password", {
+    method: "PUT",
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  return res.data;
+}
+
+export async function fetch_my_applications(): Promise<Application[]> {
+  const res = await apiJson<Application[]>("/member/mypage/applications", { method: "GET" });
   return res.data || [];
 }
 
-export async function fetch_application_result(club_id) {
-  const res = await apiJson(`/member/mypage/applications/${club_id}/result`, {
+export async function fetch_application_result(club_id: string | number): Promise<ApplicationResult> {
+  const res = await apiJson<ApplicationResult>(`/member/mypage/applications/${club_id}/result`, {
     method: "GET",
   });
   return res.data;
 }
 
-export async function delete_application(club_id) {
-  const res = await apiJson(`/member/mypage/application/${club_id}/delete`, {
+export async function delete_application(club_id: string | number): Promise<ApiWrapper<unknown>> {
+  const res = await apiJson<unknown>(`/member/mypage/application/${club_id}/delete`, {
     method: "POST",
   });
   return res;
 }
 
-export const delete_member_application = delete_application;
-
-export async function fetch_application_for_update(club_id) {
-  const res = await apiJson(`/member/mypage/applications/${club_id}/update`, {
+export async function fetch_application_for_update(club_id: string | number): Promise<unknown> {
+  const res = await apiJson<unknown>(`/member/mypage/applications/${club_id}/update`, {
     method: "GET",
   });
   return res.data;
 }
 
-export async function update_application(club_id, payload) {
-  const res = await apiJson(`/member/mypage/applications/${club_id}/update`, {
+export async function update_application(club_id: string | number, payload: unknown): Promise<ApiWrapper<unknown>> {
+  const res = await apiJson<unknown>(`/member/mypage/applications/${club_id}/update`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
   return res;
 }
 
-export async function api_member_withdraw() {
-  const res = await apiJson("/member/mypage/delete", { method: "POST" });
-  clear_tokens();
-  return res;
-}
-
-// ✅ 오너: 내가 관리하는 동아리 목록 조회
-export async function fetch_owner_managed_clubs() {
-  const res = await apiJson("/owner/club/managed-clubs", { method: "GET" });
+// ===== OWNER =====
+export async function fetch_owner_managed_clubs(): Promise<ManagedClub[]> {
+  const res = await apiJson<ManagedClub[]>("/owner/club/managed-clubs", { method: "GET" });
   return res.data || [];
 }
 
-// ===== OWNER: 이미지 업로드 (배치 Presigned URL) =====
-export async function owner_issue_upload_urls(files = []) {
+async function owner_issue_upload_urls(files: File[]): Promise<UploadUrlItem[]> {
   const payload_files = files.map((file) => ({
     fileName: file?.name || "file",
     contentType: file?.type || "application/octet-stream",
   }));
 
-  const res = await apiJson("/owner/club/upload-urls", {
+  const res = await apiJson<UploadUrlItem[]>("/owner/club/upload-urls", {
     method: "POST",
     body: JSON.stringify({ files: payload_files }),
   });
@@ -423,7 +440,7 @@ export async function owner_issue_upload_urls(files = []) {
   return Array.isArray(res?.data) ? res.data : [];
 }
 
-export async function owner_put_presigned_url(preSignedUrl, file) {
+async function owner_put_presigned_url(preSignedUrl: string, file: File): Promise<boolean> {
   const putRes = await fetch(preSignedUrl, {
     method: "PUT",
     headers: {
@@ -433,14 +450,13 @@ export async function owner_put_presigned_url(preSignedUrl, file) {
   });
 
   if (!putRes.ok) {
-    const err = new Error("이미지 업로드에 실패했습니다.");
-    err.status = putRes.status;
-    throw err;
+    throw Object.assign(new Error("이미지 업로드에 실패했습니다."), { status: putRes.status });
   }
   return true;
 }
 
-export async function owner_upload_images(files = []) {
+export async function owner_upload_images(files: File[]): Promise<string[]> {
+  if (DEV_MOCK) return files.map((_, i) => `mock_image_${i + 1}.jpg`);
   if (!Array.isArray(files) || files.length === 0) return [];
 
   const issued = await owner_issue_upload_urls(files);
@@ -449,7 +465,7 @@ export async function owner_upload_images(files = []) {
     throw new Error("업로드 URL 개수가 파일 개수와 다릅니다.");
   }
 
-  const uploaded_names = [];
+  const uploaded_names: string[] = [];
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
@@ -466,9 +482,9 @@ export async function owner_upload_images(files = []) {
   return uploaded_names;
 }
 
-// ===== OWNER: 동아리 등록 (JSON) =====
-export async function owner_register_club(payload) {
-  const res = await owner_fetch_json("/owner/clubs", {
+export async function owner_register_club(payload: ClubPayload): Promise<ApiWrapper<unknown>> {
+  if (DEV_MOCK) return { status: "SUCCESS", data: { id: 1, ...payload } };
+  return owner_fetch_json("/owner/clubs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -481,23 +497,19 @@ export async function owner_register_club(payload) {
       uploadedImageFileNames: payload?.uploadedImageFileNames ?? [],
     }),
   });
-
-  return res;
 }
 
-// ===== OWNER: 동아리 상세 조회 (GET) =====
-export async function fetch_owner_club_detail(club_id) {
-  const res = await owner_fetch_json(`/owner/clubs/${club_id}`, {
+export async function fetch_owner_club_detail(club_id: string | number): Promise<Club | null> {
+  if (DEV_MOCK) return { ...MOCK_CLUB, id: Number(club_id) || MOCK_CLUB.id };
+  const res = await owner_fetch_json<Club>(`/owner/clubs/${club_id}`, {
     method: "GET",
   });
   return res.data || null;
 }
 
-export const owner_get_club = fetch_owner_club_detail;
-
-// ===== OWNER: 동아리 수정 (PUT) =====
-export async function owner_update_club(club_id, payload) {
-  const res = await owner_fetch_json(`/owner/clubs/${club_id}`, {
+export async function owner_update_club(club_id: string | number, payload: ClubPayload): Promise<Club | null> {
+  if (DEV_MOCK) return { ...MOCK_CLUB, id: Number(club_id) || MOCK_CLUB.id, ...payload };
+  const res = await owner_fetch_json<Club>(`/owner/clubs/${club_id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -513,65 +525,50 @@ export async function owner_update_club(club_id, payload) {
   return res.data || null;
 }
 
-// ===== OWNER: 모집 기간 설정 =====
-export async function owner_set_recruitment(club_id, { startDate, endDate }) {
-  const res = await apiJson(`/owner/clubs/${club_id}/recruitments`, {
-    method: "PUT",
-    body: JSON.stringify({ startDate, endDate }),
-  });
-  return res.data;
-}
-
-// ===== OWNER: 지원자 목록 =====
-export async function fetch_owner_applicants(club_id) {
-  const res = await owner_fetch_json(`/owner/club/${club_id}/applicants`, {
+export async function fetch_owner_applicants(club_id: string | number): Promise<Applicant[]> {
+  const res = await owner_fetch_json<Applicant[]>(`/owner/club/${club_id}/applicants`, {
     method: "GET",
   });
   return res.data || [];
 }
 
-// ===== OWNER: 지원서 질문(커스텀 질문) 조회/저장 =====
-export async function fetch_owner_club_questions(club_id) {
-  const res = await apiJson(`/owner/clubs/${club_id}/questions`, {
+export async function fetch_owner_club_questions(club_id: string | number): Promise<Question[]> {
+  const res = await apiJson<Question[]>(`/owner/clubs/${club_id}/questions`, {
     method: "GET",
   });
   return res.data || [];
 }
 
-export async function owner_update_club_questions(club_id, questions = []) {
+export async function owner_update_club_questions(club_id: string | number, questions: unknown[]): Promise<ApiWrapper<unknown>> {
   return apiJson(`/owner/clubs/${club_id}/questions`, {
     method: "PUT",
     body: JSON.stringify(questions),
   });
 }
 
-// ===== OWNER: 지원자 상세 조회 =====
-export async function fetch_owner_applicant_detail(club_id, application_id) {
-  const res = await apiJson(
+export async function fetch_owner_applicant_detail(club_id: string | number, application_id: string | number): Promise<ApplicantDetail> {
+  const res = await apiJson<ApplicantDetail>(
     `/owner/clubs/${club_id}/applications/${application_id}`,
     { method: "GET" },
   );
   return res.data;
 }
 
-// ===== OWNER: 지원자 상태 변경 =====
 export async function owner_update_applicant_status(
-  club_id,
-  application_id,
-  new_status,
-) {
-  const res = await apiJson(
+  club_id: string | number,
+  application_id: string | number,
+  new_status: string,
+): Promise<ApiWrapper<unknown>> {
+  return apiJson(
     `/owner/clubs/${club_id}/applications/status`,
     {
       method: "PUT",
       body: JSON.stringify([{ applicationId: Number(application_id), status: new_status }]),
     },
   );
-  return res;
 }
 
-// ===== OWNER: 지원자 엑셀 다운로드 =====
-export async function owner_download_applicants_excel(club_id) {
+export async function owner_download_applicants_excel(club_id: string | number): Promise<boolean> {
   const res = await apiFetch(`/owner/club/${club_id}/applicants/excel`, {
     method: "GET",
   });
@@ -579,15 +576,14 @@ export async function owner_download_applicants_excel(club_id) {
   const content_type = (res.headers.get("content-type") || "").toLowerCase();
 
   if (content_type.includes("application/json")) {
-    const json = await res.json().catch(() => null);
+    const json: ApiWrapper<string> | null = await res.json().catch(() => null);
 
     if (!res.ok || json?.status === "FAIL") {
-      const err = new Error(json?.message || "엑셀 다운로드에 실패했습니다.");
-      err.code =
-        json?.errorCode || (res.status === 401 ? "UNAUTHORIZED" : "ERROR");
-      err.status = res.status;
-      err.raw = json;
-      throw err;
+      throw Object.assign(new Error(json?.message || "엑셀 다운로드에 실패했습니다."), {
+        code: json?.errorCode || (res.status === 401 ? "UNAUTHORIZED" : "ERROR"),
+        status: res.status,
+        raw: json,
+      });
     }
 
     const maybe_string = json?.data;
@@ -616,18 +612,17 @@ export async function owner_download_applicants_excel(club_id) {
     try {
       const txt = await res.text();
       if (txt) msg = txt;
-    } catch {}
-    const err = new Error(msg);
-    err.status = res.status;
-    throw err;
+    } catch {
+      // ignore
+    }
+    throw Object.assign(new Error(msg), { status: res.status });
   }
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
 
   const cd = res.headers.get("content-disposition") || "";
-  const match =
-    /filename\*=utf-8''([^;]+)|filename="?([^"]+)"?/i.exec(cd) || [];
+  const match = /filename\*=utf-8''([^;]+)|filename="?([^"]+)"?/i.exec(cd) || [];
   const filename = decodeURIComponent(
     match[1] || match[2] || `applicants_${club_id}.xlsx`,
   );
@@ -643,16 +638,15 @@ export async function owner_download_applicants_excel(club_id) {
   return true;
 }
 
-// ===== OWNER: 합불 결과 메일 발송 =====
-export async function owner_send_result_email(club_id) {
+export async function owner_send_result_email(club_id: string | number): Promise<ApiWrapper<unknown>> {
   return apiJson(`/owner/club/email/${club_id}`, {
     method: "POST",
   });
 }
 
-// ===== MEMBER: 지원서 파일 업로드용 presigned url 발급 =====
-export async function member_issue_application_upload_url(file) {
-  const res = await apiJson("/member/clubs/application/upload-url", {
+// ===== MEMBER: 지원서 파일 =====
+export async function member_issue_application_upload_url(file: File): Promise<unknown> {
+  const res = await apiJson<unknown>("/member/clubs/application/upload-url", {
     method: "POST",
     body: JSON.stringify({
       originalFileName: file?.name || "file",
@@ -662,7 +656,7 @@ export async function member_issue_application_upload_url(file) {
   return res?.data || null;
 }
 
-export async function member_put_presigned_url(preSignedUrl, file) {
+export async function member_put_presigned_url(preSignedUrl: string, file: File): Promise<boolean> {
   const putRes = await fetch(preSignedUrl, {
     method: "PUT",
     headers: { "Content-Type": file?.type || "application/octet-stream" },
@@ -670,24 +664,12 @@ export async function member_put_presigned_url(preSignedUrl, file) {
   });
 
   if (!putRes.ok) {
-    const err = new Error("파일 업로드에 실패했습니다.");
-    err.status = putRes.status;
-    throw err;
+    throw Object.assign(new Error("파일 업로드에 실패했습니다."), { status: putRes.status });
   }
   return true;
 }
 
-// ===== MEMBER: 동아리 지원서 제출 =====
-export async function member_apply_club(club_id, payload) {
-  const res = await apiJson(`/member/clubs/${club_id}/apply`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-  return res?.data || null;
-}
-
-// ===== MEMBER: (지원서 첨부파일) 다운로드 URL 발급 =====
-export async function member_issue_application_download_url(file_key) {
+export async function member_issue_application_download_url(file_key: string): Promise<unknown> {
   const q = encodeURIComponent(String(file_key || ""));
   const candidates = [
     `/member/mypage/applications/file-url?fileKey=${q}`,
@@ -697,7 +679,7 @@ export async function member_issue_application_download_url(file_key) {
     `/file/presigned-download?fileKey=${q}`,
   ];
 
-  let last_err = null;
+  let last_err: unknown = null;
 
   for (const path of candidates) {
     try {
@@ -711,12 +693,11 @@ export async function member_issue_application_download_url(file_key) {
   throw last_err || new Error("download url api not found");
 }
 
-// ===== OWNER: (지원서 첨부파일) 다운로드 URL 발급 =====
 export async function owner_issue_application_download_url(
-  club_id,
-  club_member_id,
-  file_key,
-) {
+  club_id: string | number,
+  club_member_id: string | number,
+  file_key: string,
+): Promise<unknown> {
   const q = encodeURIComponent(String(file_key || ""));
   const candidates = [
     `/owner/club/${club_id}/applicants/${club_member_id}/file-url?fileKey=${q}`,
@@ -725,7 +706,7 @@ export async function owner_issue_application_download_url(
     `/files/presigned-download?fileKey=${q}`,
   ];
 
-  let last_err = null;
+  let last_err: unknown = null;
 
   for (const path of candidates) {
     try {

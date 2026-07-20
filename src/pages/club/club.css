@@ -314,3 +314,28 @@ section.intro.card .desc.rich_desc table {
   max-width: 100%;
   box-sizing: border-box;
 }
+
+/* ===== 미리보기 모드 ===== */
+.preview-club-name {
+  padding: 16px 16px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.club_page--preview .club_main {
+  padding-top: 12px;
+}
+
+.club_page--preview section.intro.card {
+  width: auto;
+}
+
+.club_page--preview section.intro.card .desc.rich_desc {
+  width: auto;
+}
+
+.club_page--preview .card {
+  width: auto;
+  box-sizing: border-box;
+}

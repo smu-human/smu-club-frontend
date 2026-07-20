@@ -14,7 +14,7 @@ export default function StudentAuth() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!agree) {
@@ -33,11 +33,12 @@ export default function StudentAuth() {
 
       alert("회원가입이 완료되었습니다.\n로그인 페이지로 이동합니다.");
       navigate("/login", { replace: true });
-    } catch (err) {
-      if (err.code === "UNAUTHORIZED") {
+    } catch (err: unknown) {
+      const e = err as Error & { code?: string };
+      if (e.code === "UNAUTHORIZED") {
         setErrorMsg("인증이 필요합니다.");
       } else {
-        setErrorMsg(err.message || "학생 인증에 실패했습니다.");
+        setErrorMsg(e.message || "학생 인증에 실패했습니다.");
       }
     } finally {
       setLoading(false);
@@ -122,7 +123,7 @@ export default function StudentAuth() {
                       placeholder="학번을 입력하세요"
                       required
                       value={studentId}
-                      onChange={(e) => setStudentId(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStudentId(e.target.value)}
                     />
                   </div>
                 </div>
@@ -147,7 +148,7 @@ export default function StudentAuth() {
                       placeholder="비밀번호를 입력하세요"
                       required
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                     />
                   </div>
                 </div>
@@ -170,7 +171,7 @@ export default function StudentAuth() {
                       placeholder="연락처(숫자만 입력)"
                       required
                       value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value)}
                     />
                   </div>
                 </div>
@@ -181,7 +182,7 @@ export default function StudentAuth() {
                     <input
                       type="checkbox"
                       checked={agree}
-                      onChange={(e) => setAgree(e.target.checked)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgree(e.target.checked)}
                       required
                     />
                     <span className="checkmark"></span>

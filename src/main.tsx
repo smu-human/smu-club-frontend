@@ -1,13 +1,13 @@
-// src/main.jsx
+// src/main.tsx
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
-import { router } from "./app/router.jsx";
+import { router } from "./app/router.tsx";
 import { on_session_expired, clear_tokens } from "./lib/api";
 
-let unsub = null;
+let unsub: (() => void) | null = null;
 
-function setup_session_expired_listener() {
+function setup_session_expired_listener(): void {
   if (unsub) return;
 
   unsub = on_session_expired(() => {
@@ -26,7 +26,7 @@ function setup_session_expired_listener() {
 
 setup_session_expired_listener();
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <RouterProvider router={router} />
   </React.StrictMode>,

@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Bash(find src:*)",
+      "Bash(ls -la *.json *.config.*)",
+      "Bash(npm install:*)",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\home\\\\home.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\mypage\\\\mypage.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\club\\\\club.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\not-found\\\\not-found.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\dev_nav\\\\dev_nav.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\admin_login\\\\admin_login.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\login\\\\login.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\student_auth\\\\student_auth.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\club_register\\\\club_register.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\club_edit\\\\club_edit.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\club_manage\\\\club_manage.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\club_info_edit\\\\club_info_edit.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\admin_club_info_edit\\\\admin_club_info_edit.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\admin_apply_form_edit\\\\admin_apply_form_edit.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\apply_form_edit\\\\apply_form_edit.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\admin_applicant_manage\\\\admin_applicant_manage.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\applicant_manage\\\\applicant_manage.jsx\")",
+      "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\apply_form_submit\\\\apply_form_submit.jsx\")",
+      "Bash(del:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

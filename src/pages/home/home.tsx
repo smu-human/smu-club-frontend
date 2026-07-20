@@ -1,25 +1,25 @@
-// src/pages/home/home.jsx
+// src/pages/home/home.tsx
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../../styles/globals.css";
 import "./home.css";
 import { fetch_public_clubs } from "../../lib/api";
+import { ClubListItem } from "../../lib/types";
 
-function ddayClass(d) {
-  if (d == null) return "dday-neutral";
-  if (d <= 0) return "dday-passed";
-  if (d <= 3) return "dday-hot";
-  if (d <= 7) return "dday-soon";
-  if (d <= 14) return "dday-warm";
-  return "dday-neutral";
+interface ClubItem {
+  id: number;
+  name: string;
+  status: string;
+  members: number | null;
+  dday: number | null;
+  deadline: string | null;
+  desc: string;
+  logo: string;
 }
 
-// function ddayLabel(d) {
-//   if (d == null) return "예정";
-//   if (d <= 0) return "마감";
-//   return `D-${d}`;
-// }
+// function ddayClass(d: number | null): string { ... }
+// function ddayLabel(d: number | null): string { ... }
 
 const DEFAULT_LOGO = "/images/2.png";
 
@@ -28,7 +28,7 @@ const THUMB_BASE_URL =
   import.meta.env.VITE_S3_BASE_URL ||
   "";
 
-function normalize_img_url(url) {
+function normalize_img_url(url: unknown): string | null {
   if (!url) return null;
   const s = String(url).trim();
   if (!s) return null;
@@ -46,17 +46,17 @@ function normalize_img_url(url) {
   return s;
 }
 
-function pick_thumbnail(item) {
+function pick_thumbnail(item: ClubListItem): string | null {
   return normalize_img_url(item?.thumbnailUrl);
 }
 
 export default function HomePage() {
   const nav = useNavigate();
   const [query, setQuery] = useState("");
-  const [sortKey, setSortKey] = useState("name");
+  const [sortKey, setSortKey] = useState<string>("name");
   const [onlyOpen, setOnlyOpen] = useState(false);
 
-  const [clubs, setClubs] = useState([]);
+  const [clubs, setClubs] = useState<ClubItem[]>([]);
   const [is_loading, set_is_loading] = useState(false);
   const [error_msg, set_error_msg] = useState("");
 
@@ -85,7 +85,7 @@ export default function HomePage() {
 
         setClubs(mapped.filter((c) => c.id != null));
       } catch (err) {
-        set_error_msg(err.message || "동아리 목록을 불러오지 못했습니다.");
+        set_error_msg((err as Error & { code?: string }).message || "동아리 목록을 불러오지 못했습니다.");
       } finally {
         set_is_loading(false);
       }
@@ -147,7 +147,7 @@ export default function HomePage() {
           </svg>
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
             className="search_input"
             placeholder="동아리 이름 검색"
           />
@@ -161,7 +161,7 @@ export default function HomePage() {
               <input
                 type="checkbox"
                 checked={onlyOpen}
-                onChange={(e) => setOnlyOpen(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOnlyOpen(e.target.checked)}
               />
               <span>신청가능</span>
             </label>
@@ -169,7 +169,7 @@ export default function HomePage() {
             <select
               className="sort_select"
               value={sortKey}
-              onChange={(e) => setSortKey(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortKey(e.target.value)}
             >
               <option value="name">이름순</option>
               <option value="dday">마감 임박순</option>
@@ -196,7 +196,7 @@ export default function HomePage() {
                     className="club_logo"
                     src={c.logo}
                     alt={`${c.name} 로고`}
-                    onError={(e) => {
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                       e.currentTarget.onerror = null;
                       e.currentTarget.src = DEFAULT_LOGO;
                     }}

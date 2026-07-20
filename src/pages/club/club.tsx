@@ -1,159 +1,68 @@
-// src/pages/club/club.jsx (부분 교체: "지원하기" 노출 조건에 모집 시작 여부 추가)
+// src/pages/club/club.tsx (부분 교체: "지원하기" 노출 조건에 모집 시작 여부 추가)
 
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useRef, useEffect, useMemo } from "react";
 import "../../styles/globals.css";
 import "./club.css";
 import {
   fetch_public_club,
   fetch_owner_club_detail,
-  create_application_session,
   is_logged_in,
   fetch_owner_managed_clubs,
-  fetch_my_applications,
 } from "../../lib/api";
+import { Club } from "../../lib/types";
 
-function fmt_date(v) {
+function fmt_date(v: unknown): string {
   if (!v) return "-";
   const s = String(v);
   if (s.includes("T")) return s.split("T")[0];
   return s;
 }
 
-function get_id(obj) {
-  const v =
-    obj?.clubId ??
-    obj?.club_id ??
-    obj?.id ??
-    obj?.club?.clubId ??
-    obj?.club?.id ??
-    obj?.club?.club_id ??
-    obj?.application?.clubId ??
-    obj?.application?.club_id ??
-    obj?.clubInfo?.clubId ??
-    obj?.clubInfo?.id;
-  return v === undefined || v === null ? null : String(v);
-}
-
-function as_time(v) {
-  if (!v) return null;
-  const t = Date.parse(String(v));
-  return Number.isFinite(t) ? t : null;
-}
 
 export default function ClubPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id?: string }>();
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const is_preview = searchParams.get("preview") === "1";
 
-  const [club, setClub] = useState(null);
-  const [images, setImages] = useState([]);
+  const [club, setClub] = useState<Club | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error_msg, set_error_msg] = useState("");
-  const carouselRef = useRef(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
-  const [owner_ids, set_owner_ids] = useState(new Set());
-  const [applied_ids, set_applied_ids] = useState(new Set());
+  const [owner_ids, set_owner_ids] = useState<Set<string>>(new Set<string>());
 
   const is_owner = useMemo(() => owner_ids.has(String(id)), [owner_ids, id]);
-  const is_applied = useMemo(
-    () => applied_ids.has(String(id)),
-    [applied_ids, id],
-  );
 
   const is_guest = useMemo(() => !is_logged_in(), []);
 
-  // ✅ 모집 시작 여부 판단 (API가 어떤 키로 주는지 모르니 여러 케이스 대응)
-  const is_recruitment_started = useMemo(() => {
-    if (!club) return false;
-
-    // 1) boolean 플래그가 있다면 그걸 최우선
-    const flags = [
-      club?.recruitingStarted,
-      club?.isRecruitingStarted,
-      club?.recruitStarted,
-      club?.isRecruitStarted,
-      club?.isRecruiting,
-      club?.recruitingOpen,
-    ];
-    for (const f of flags) {
-      if (typeof f === "boolean") return f;
-    }
-
-    // 2) 상태값이 있다면 OPEN일 때만 true
-    const status = String(
-      club?.recruitingStatus ?? club?.status ?? club?.recruitStatus ?? "",
-    ).toUpperCase();
-    if (status) {
-      if (status === "OPEN") return true;
-      if (status === "CLOSED") return false;
-      if (status === "UPCOMING") return false;
-      if (status === "PENDING") return false;
-      if (status === "WAITING") return false;
-    }
-
-    // 3) 시작일이 있다면 now >= start 일 때만 true
-    const start = as_time(
-      club?.recruitingStart ??
-        club?.recruitStart ??
-        club?.recruitStartAt ??
-        club?.recruitingStartAt,
-    );
-    if (start !== null) return Date.now() >= start;
-
-    // 4) 아무 정보도 없으면 "시작 안함"으로 처리 (안전)
-    return false;
-  }, [club]);
-
-  const can_show_apply = useMemo(() => {
-    if (is_owner) return false;
-    if (!is_recruitment_started) return false;
-    return true;
-  }, [is_owner, is_recruitment_started]);
 
   useEffect(() => {
-    const load_owner_and_applied = async () => {
+    const load_owner = async () => {
       if (!is_logged_in()) {
-        set_owner_ids(new Set());
-        set_applied_ids(new Set());
+        set_owner_ids(new Set<string>());
         return;
       }
 
       try {
-        const [ownerData, appsData] = await Promise.allSettled([
-          fetch_owner_managed_clubs(),
-          fetch_my_applications(),
-        ]);
-
-        if (ownerData.status === "fulfilled") {
-          const owners = Array.isArray(ownerData.value) ? ownerData.value : [];
-          const next_owner = new Set(
-            owners
-              .map((c) => c?.clubId ?? c?.id ?? c?.club_id)
-              .filter((v) => v !== undefined && v !== null)
-              .map(String),
-          );
-          set_owner_ids(next_owner);
-        } else {
-          set_owner_ids(new Set());
-        }
-
-        if (appsData.status === "fulfilled") {
-          const apps = Array.isArray(appsData.value) ? appsData.value : [];
-          const next_applied = new Set(
-            apps.map(get_id).filter((v) => v !== null),
-          );
-          set_applied_ids(next_applied);
-        } else {
-          set_applied_ids(new Set());
-        }
+        const ownerData = await fetch_owner_managed_clubs().catch(() => null);
+        const owners = Array.isArray(ownerData) ? ownerData : [];
+        const next_owner = new Set<string>(
+          owners
+            .map((c: unknown) => (c as Record<string, unknown>)?.clubId ?? (c as Record<string, unknown>)?.id ?? (c as Record<string, unknown>)?.club_id)
+            .filter((v: unknown) => v !== undefined && v !== null)
+            .map(String),
+        );
+        set_owner_ids(next_owner);
       } catch {
-        set_owner_ids(new Set());
-        set_applied_ids(new Set());
+        set_owner_ids(new Set<string>());
       }
     };
 
-    load_owner_and_applied();
+    load_owner();
   }, []);
 
   useEffect(() => {
@@ -166,21 +75,26 @@ export default function ClubPage() {
 
         const data =
           logged_in && is_owner
-            ? await fetch_owner_club_detail(id)
-            : await fetch_public_club(id);
+            ? await fetch_owner_club_detail(id!)
+            : await fetch_public_club(id ?? "");
 
-        const club_data = data?.data ?? data;
+        const club_data = data ?? null;
         setClub(club_data);
 
         const club_images = Array.isArray(club_data?.clubImages)
           ? club_data.clubImages
           : [];
 
-        const urls_from_club_images = club_images
+        const urls_from_club_images = (club_images as unknown[])
           .slice()
-          .sort((a, b) => (a?.orderNumber ?? 0) - (b?.orderNumber ?? 0))
-          .map((it) => it?.imageUrl)
-          .filter((v) => v && String(v).trim() && v !== "string");
+          .sort((a, b) => {
+            const ao = (a as Record<string, unknown>)?.orderNumber;
+            const bo = (b as Record<string, unknown>)?.orderNumber;
+            return ((ao as number) ?? 0) - ((bo as number) ?? 0);
+          })
+          .map((it) => (it as Record<string, unknown>)?.imageUrl)
+          .filter((v) => v && String(v).trim() && v !== "string")
+          .map(String);
 
         const thumb =
           club_data?.thumbnailUrl &&
@@ -189,7 +103,7 @@ export default function ClubPage() {
             ? club_data.thumbnailUrl
             : null;
 
-        const final_urls =
+        const final_urls: string[] =
           urls_from_club_images.length > 0
             ? urls_from_club_images
             : thumb
@@ -201,7 +115,7 @@ export default function ClubPage() {
         setActiveIndex(0);
         carouselRef.current?.scrollTo({ left: 0 });
       } catch (err) {
-        set_error_msg(err.message || "동아리 정보를 불러오지 못했습니다.");
+        set_error_msg((err as Error & { code?: string }).message || "동아리 정보를 불러오지 못했습니다.");
         setClub(null);
         setImages([]);
         setActiveIndex(0);
@@ -213,7 +127,7 @@ export default function ClubPage() {
     load();
   }, [id, is_owner]);
 
-  const goTo = (nextIdx) => {
+  const goTo = (nextIdx: number) => {
     if (!carouselRef.current || images.length === 0) return;
     const total = images.length;
     const clamped = (nextIdx + total) % total;
@@ -236,48 +150,37 @@ export default function ClubPage() {
     if (idx !== activeIndex) setActiveIndex(idx);
   };
 
-  const handleApply = async () => {
-    if (!can_show_apply) return;
-
-    try {
-      await create_application_session(id);
-      nav("/apply_form_submit", { state: { clubId: id, club } });
-    } catch (err) {
-      set_error_msg(err.message || "지원 세션 생성에 실패했습니다.");
-    }
-  };
-
   return (
-    <div className="club_page">
-      <header className="page-header sticky-header safe-area-top page-header--club">
-        <div className="container">
-          <div className="page-header-content">
-            <button
-              className="back-btn"
-              aria-label="뒤로가기"
-              onClick={() => nav("/")}
-            >
-              <svg
-                className="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
+    <div className={`club_page${is_preview ? " club_page--preview" : ""}`}>
+      {is_preview && club && (
+        <div className="preview-club-name">{club.name}</div>
+      )}
+
+      {!is_preview && (
+        <header className="page-header sticky-header safe-area-top page-header--club">
+          <div className="container">
+            <div className="page-header-content">
+              <button
+                className="back-btn"
+                aria-label="뒤로가기"
+                onClick={() => nav("/")}
               >
-                <path d="M19 12H5" />
-                <path d="M12 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            <h1>{club?.name || `클럽 ${id} 상세`}</h1>
-
-            {can_show_apply && (
-              <button className="apply_btn" onClick={handleApply}>
-                지원하기
+                <svg
+                  className="icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path d="M19 12H5" />
+                  <path d="M12 19l-7-7 7-7" />
+                </svg>
               </button>
-            )}
+
+              <h1>{club?.name || `클럽 ${id} 상세`}</h1>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="club_main safe-area-padding">
         <div className="container">
@@ -386,18 +289,20 @@ export default function ClubPage() {
         </div>
       </main>
 
-      <div className="page-footer">
-        <p>© 2025 smu-club. 상명대학교 동아리 플랫폼</p>
-        <p>
-          <a
-            href="https://github.com/smu-human/smu-club"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Github
-          </a>
-        </p>
-      </div>
+      {!is_preview && (
+        <div className="page-footer">
+          <p>© 2025 smu-club. 상명대학교 동아리 플랫폼</p>
+          <p>
+            <a
+              href="https://github.com/smu-human/smu-club"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Github
+            </a>
+          </p>
+        </div>
+      )}
     </div>
   );
 }
