@@ -1,10 +1,11 @@
-// src/pages/club_manage/club_manage.jsx
+// src/pages/club_manage/club_manage.tsx
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/globals.css";
 import "./club_manage.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
+import type { Club } from "../../lib/types";
 
 import {
   fetch_owner_club_detail,
@@ -12,7 +13,7 @@ import {
   owner_upload_images,
 } from "../../lib/api";
 
-function extract_object_key(v) {
+function extract_object_key(v: unknown): string | null {
   const s = String(v || "").trim();
   if (!s) return null;
 
@@ -24,7 +25,7 @@ function extract_object_key(v) {
   return s;
 }
 
-function normalize_existing_images(detail) {
+function normalize_existing_images(detail: Club | null): string[] {
   const club_images = Array.isArray(detail?.clubImages)
     ? detail.clubImages
     : [];
@@ -33,7 +34,7 @@ function normalize_existing_images(detail) {
     .slice()
     .sort((a, b) => (a?.orderNumber ?? 0) - (b?.orderNumber ?? 0))
     .map((it) => extract_object_key(it?.imageUrl))
-    .filter((v) => v && String(v).trim() && v !== "string");
+    .filter((v): v is string => v !== null && String(v).trim() !== "" && v !== "string");
 
   if (keys.length > 0) return keys;
 
@@ -43,10 +44,10 @@ function normalize_existing_images(detail) {
 
   return fallback
     .map((it) => extract_object_key(it))
-    .filter((v) => v && String(v).trim() && v !== "string");
+    .filter((v): v is string => v !== null && String(v).trim() !== "" && v !== "string");
 }
 
-function to_display_name(v) {
+function to_display_name(v: unknown): string {
   const s = String(v || "");
   try {
     const decoded = decodeURIComponent(s);
@@ -60,8 +61,8 @@ function to_display_name(v) {
 
 export default function ClubManage() {
   const navigate = useNavigate();
-  const { clubId } = useParams();
-  const editorRef = useRef(null);
+  const { clubId } = useParams<{ clubId: string }>();
+  const editorRef = useRef<{ getInstance(): { getHTML(): string } } | null>(null);
 
   const today_str = new Date().toISOString().slice(0, 10);
 
@@ -72,8 +73,8 @@ export default function ClubManage() {
   const [deadline, set_deadline] = useState("");
   const [club_room, set_club_room] = useState("");
 
-  const [existing_images, set_existing_images] = useState([]);
-  const [new_images, set_new_images] = useState([]);
+  const [existing_images, set_existing_images] = useState<string[]>([]);
+  const [new_images, set_new_images] = useState<File[]>([]);
 
   const [is_loading, set_is_loading] = useState(true);
   const [is_saving, set_is_saving] = useState(false);
@@ -83,7 +84,7 @@ export default function ClubManage() {
   const [show_live_preview, set_show_live_preview] = useState(true);
   const [is_editor_fullscreen, set_is_editor_fullscreen] = useState(false);
 
-  const preview_timer_ref = useRef(null);
+  const preview_timer_ref = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sync_preview_from_editor = () => {
     if (preview_timer_ref.current) clearTimeout(preview_timer_ref.current);
@@ -95,7 +96,7 @@ export default function ClubManage() {
   };
 
   useEffect(() => {
-    const on_key = (e) => {
+    const on_key = (e: KeyboardEvent) => {
       if (e.key === "Escape") set_is_editor_fullscreen(false);
     };
 
@@ -115,6 +116,7 @@ export default function ClubManage() {
     const load = async () => {
       try {
         const detail = await fetch_owner_club_detail(clubId);
+        if (!detail) throw new Error("동아리 정보를 찾을 수 없습니다.");
 
         set_club_name(detail?.name ?? "");
         set_club_one_line(detail?.title ?? "");
@@ -127,8 +129,8 @@ export default function ClubManage() {
         const html = detail?.description ?? "";
         set_editor_html(html);
         set_preview_html(html);
-      } catch (e) {
-        alert(e?.message || "동아리 정보를 불러오지 못했습니다.");
+      } catch (err) {
+        alert((err as Error & { code?: string })?.message || "동아리 정보를 불러오지 못했습니다.");
         navigate("/mypage");
       } finally {
         set_is_loading(false);
@@ -142,7 +144,7 @@ export default function ClubManage() {
     };
   }, [clubId, navigate]);
 
-  const on_pick_new_images = (e) => {
+  const on_pick_new_images = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const remaining = 5 - existing_images.length;
 
@@ -162,7 +164,7 @@ export default function ClubManage() {
     e.target.value = "";
   };
 
-  const remove_existing_image = (idx) => {
+  const remove_existing_image = (idx: number) => {
     set_existing_images((prev) => prev.filter((_, i) => i !== idx));
   };
 
@@ -178,16 +180,16 @@ export default function ClubManage() {
 
       const intro_html = editorRef.current?.getInstance()?.getHTML() || "";
 
-      const uploaded_new = new_images.length
+      const uploaded_new: string[] = new_images.length
         ? await owner_upload_images(new_images)
         : [];
 
       const uploaded_new_keys = (uploaded_new || [])
         .map((it) => extract_object_key(it))
-        .filter(Boolean);
+        .filter((v): v is string => v !== null);
 
       const merged_images = [
-        ...existing_images.map((it) => extract_object_key(it)).filter(Boolean),
+        ...existing_images.map((it) => extract_object_key(it)).filter((v): v is string => v !== null),
         ...uploaded_new_keys,
       ];
 
@@ -196,7 +198,7 @@ export default function ClubManage() {
         return;
       }
 
-      await owner_update_club(clubId, {
+      await owner_update_club(clubId!, {
         uploadedImageFileNames: merged_images,
         name: club_name,
         title: club_one_line,
@@ -209,8 +211,8 @@ export default function ClubManage() {
 
       alert("수정 완료");
       navigate("/mypage");
-    } catch (e) {
-      alert(e?.message || "수정 실패");
+    } catch (err) {
+      alert((err as Error & { code?: string })?.message || "수정 실패");
     } finally {
       set_is_saving(false);
     }
@@ -319,7 +321,7 @@ export default function ClubManage() {
               className="field_input"
               type="text"
               value={club_name}
-              onChange={(e) => set_club_name(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_club_name(e.target.value)}
             />
 
             <label className="field_label" htmlFor="clubOneLine">
@@ -330,7 +332,7 @@ export default function ClubManage() {
               className="field_input"
               type="text"
               value={club_one_line}
-              onChange={(e) => set_club_one_line(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_club_one_line(e.target.value)}
             />
 
             <label className="field_label" htmlFor="leaderName">
@@ -341,7 +343,7 @@ export default function ClubManage() {
               className="field_input"
               type="text"
               value={leader_name}
-              onChange={(e) => set_leader_name(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_leader_name(e.target.value)}
             />
 
             <label className="field_label" htmlFor="phone">
@@ -352,7 +354,7 @@ export default function ClubManage() {
               className="field_input"
               type="tel"
               value={phone}
-              onChange={(e) => set_phone(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_phone(e.target.value)}
             />
 
             <label className="field_label" htmlFor="deadline">
@@ -364,7 +366,7 @@ export default function ClubManage() {
               type="date"
               value={deadline}
               min={today_str}
-              onChange={(e) => set_deadline(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_deadline(e.target.value)}
             />
 
             {/* <label className="field_label" htmlFor="clubRoom">

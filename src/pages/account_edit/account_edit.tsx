@@ -1,4 +1,4 @@
-// src/pages/account_edit/account_edit.jsx
+// src/pages/account_edit/account_edit.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,10 +10,16 @@ import {
 import "../../styles/globals.css";
 import "./account_edit.css";
 
+interface Profile {
+  name: string;
+  email: string;
+  phoneNumber: string;
+}
+
 export default function AccountEdit() {
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<Profile>({
     name: "",
     email: "",
     phoneNumber: "",
@@ -140,7 +146,7 @@ export default function AccountEdit() {
               type="email"
               placeholder="새 이메일"
               value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewEmail(e.target.value)}
             />
 
             <button
@@ -177,7 +183,7 @@ export default function AccountEdit() {
               type="tel"
               placeholder="새 전화번호"
               value={newPhone}
-              onChange={(e) => setNewPhone(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPhone(e.target.value)}
             />
 
             <button

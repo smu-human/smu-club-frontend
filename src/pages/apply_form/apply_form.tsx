@@ -1,4 +1,4 @@
-// src/pages/apply_form/apply_form.jsx (전체 교체)
+// src/pages/apply_form/apply_form.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/globals.css";
@@ -9,7 +9,22 @@ import {
   owner_issue_application_download_url,
 } from "../../lib/api";
 
-function normalize_status(s) {
+interface ApplicantInfo {
+  major: string;
+  studentId: string;
+  name: string;
+  phone: string;
+  email: string;
+}
+
+interface FormItem {
+  questionId: number | string | null;
+  orderNum: number;
+  questionContent: string;
+  answerContent: string;
+}
+
+function normalize_status(s: unknown): string {
   const v = String(s || "").toUpperCase();
   if (v === "ACCEPTED") return "pass";
   if (v === "REJECTED") return "fail";
@@ -18,27 +33,28 @@ function normalize_status(s) {
   return "pending";
 }
 
-function decision_to_api(decision) {
+function decision_to_api(decision: string): string {
   if (decision === "pass") return "ACCEPTED";
   if (decision === "fail") return "REJECTED";
   return "PENDING";
 }
 
-function unwrap_api(res) {
+function unwrap_api(res: unknown): Record<string, unknown> {
   if (res && typeof res === "object") {
-    if (res.data != null && typeof res.data === "object") return res.data;
-    if (res.result != null && typeof res.result === "object") return res.result;
+    const ro = res as Record<string, unknown>;
+    if (ro.data != null && typeof ro.data === "object") return ro.data as Record<string, unknown>;
+    if (ro.result != null && typeof ro.result === "object") return ro.result as Record<string, unknown>;
   }
-  return res;
+  return res as Record<string, unknown>;
 }
 
-function normalize_content(s) {
+function normalize_content(s: unknown): string {
   return String(s || "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function is_file_question_content(content) {
+function is_file_question_content(content: string): boolean {
   const t = normalize_content(content).toLowerCase();
   if (!t) return false;
   if (t === "파일추가") return true;
@@ -50,12 +66,12 @@ function is_file_question_content(content) {
   return false;
 }
 
-function is_http_url(v) {
+function is_http_url(v: unknown): boolean {
   const s = String(v || "").trim();
   return s.startsWith("http://") || s.startsWith("https://");
 }
 
-function display_file_name(fileKey) {
+function display_file_name(fileKey: string): string {
   if (!fileKey) return "";
   const s = String(fileKey);
   const parts = s.split("/");
@@ -64,7 +80,7 @@ function display_file_name(fileKey) {
 
 export default function ApplyForm() {
   const navigate = useNavigate();
-  const { clubId, clubMemberId } = useParams();
+  const { clubId, clubMemberId } = useParams<{ clubId: string; clubMemberId: string }>();
 
   const club_id = useMemo(
     () => (clubId == null ? null : String(clubId)),
@@ -80,7 +96,7 @@ export default function ApplyForm() {
 
   const [applicant_name, set_applicant_name] = useState("지원서");
 
-  const [applicant_info, set_applicant_info] = useState({
+  const [applicant_info, set_applicant_info] = useState<ApplicantInfo>({
     major: "",
     studentId: "",
     name: "",
@@ -88,7 +104,7 @@ export default function ApplyForm() {
     email: "",
   });
 
-  const [application_form_list, set_application_form_list] = useState([]); // [{questionId, orderNum, questionContent, answerContent}]
+  const [application_form_list, set_application_form_list] = useState<FormItem[]>([]); // [{questionId, orderNum, questionContent, answerContent}]
 
   const [decision, setDecision] = useState("pending");
   const [saving, set_saving] = useState(false);
@@ -114,7 +130,7 @@ export default function ApplyForm() {
     set_error_msg("");
 
     try {
-      const raw = await fetch_owner_applicant_detail(club_id, club_member_id);
+      const raw: unknown = await fetch_owner_applicant_detail(club_id, club_member_id);
       const data = unwrap_api(raw);
 
       if (seq !== request_seq.current) return;
@@ -122,18 +138,21 @@ export default function ApplyForm() {
       // 새 API: applicantName, applicantEmail, applicantPhone, studentId, major, status, answers[]
       // 구 API: applicantInfo.name 등 — fallback으로 지원
       const applicant =
-        data?.applicantInfo ?? data?.applicant ?? data?.applicant_info ?? null;
+        (data?.applicantInfo ??
+        data?.applicant ??
+        data?.applicant_info ??
+        null) as Record<string, unknown> | null;
 
       const name =
-        data?.applicantName ?? applicant?.name ?? "";
+        String(data?.applicantName ?? applicant?.name ?? "");
       const student_id =
-        data?.studentId ?? applicant?.studentId ?? applicant?.student_id ?? "";
+        String(data?.studentId ?? applicant?.studentId ?? applicant?.student_id ?? "");
       const major =
-        data?.major ?? applicant?.department ?? applicant?.major ?? "";
+        String(data?.major ?? applicant?.department ?? applicant?.major ?? "");
       const phone_number =
-        data?.applicantPhone ?? applicant?.phoneNumber ?? applicant?.phone_number ?? "";
+        String(data?.applicantPhone ?? applicant?.phoneNumber ?? applicant?.phone_number ?? "");
       const email =
-        data?.applicantEmail ?? applicant?.email ?? "";
+        String(data?.applicantEmail ?? applicant?.email ?? "");
 
       set_applicant_info({
         major: String(major || ""),
@@ -147,31 +166,37 @@ export default function ApplyForm() {
 
       // 새 API: answers: [{ questionId, content }]
       // 구 API: applicationForm: [{ questionContent, answerContent, ... }]
-      const answers_new = data?.answers ?? [];
+      const answers_new = (data?.answers ?? []) as unknown[];
       const application_form_old =
-        data?.applicationForm ??
+        (data?.applicationForm ??
         data?.application_form ??
         data?.applicationForms ??
-        [];
+        []) as unknown[];
 
-      let normalized_forms;
+      let normalized_forms: FormItem[];
       if (Array.isArray(answers_new) && answers_new.length > 0) {
-        normalized_forms = answers_new.map((q, idx) => ({
-          questionId: q?.questionId ?? idx,
-          orderNum: idx,
-          questionContent: String(q?.content ?? ""),
-          answerContent: String(q?.answer ?? ""),
-        })).filter((q) => normalize_content(q.questionContent).length > 0);
+        normalized_forms = answers_new.map((q: unknown, idx: number) => {
+          const qo = q as Record<string, unknown>;
+          return {
+            questionId: (qo?.questionId ?? idx) as number | string | null,
+            orderNum: idx,
+            questionContent: String(qo?.content ?? ""),
+            answerContent: String(qo?.answer ?? ""),
+          };
+        }).filter((q: FormItem) => normalize_content(q.questionContent).length > 0);
       } else {
         normalized_forms = (Array.isArray(application_form_old) ? application_form_old : [])
-          .map((q) => ({
-            questionId: q?.questionId ?? q?.id ?? null,
-            orderNum: q?.orderNum ?? q?.order ?? null,
-            questionContent: String(q?.questionContent ?? q?.content ?? ""),
-            answerContent: String(q?.answerContent ?? q?.answer ?? ""),
-          }))
-          .filter((q) => normalize_content(q.questionContent).length > 0)
-          .sort((a, b) => (Number(a.orderNum ?? 0) || 0) - (Number(b.orderNum ?? 0) || 0));
+          .map((q: unknown) => {
+            const qo = q as Record<string, unknown>;
+            return {
+              questionId: (qo?.questionId ?? qo?.id ?? null) as number | string | null,
+              orderNum: (qo?.orderNum ?? qo?.order ?? null) as number,
+              questionContent: String(qo?.questionContent ?? qo?.content ?? ""),
+              answerContent: String(qo?.answerContent ?? qo?.answer ?? ""),
+            };
+          })
+          .filter((q: FormItem) => normalize_content(q.questionContent).length > 0)
+          .sort((a: FormItem, b: FormItem) => (Number(a.orderNum ?? 0) || 0) - (Number(b.orderNum ?? 0) || 0));
       }
 
       set_application_form_list(normalized_forms);
@@ -190,9 +215,9 @@ export default function ApplyForm() {
         "";
 
       set_file_key(String(fk || ""));
-    } catch (e) {
+    } catch (e: unknown) {
       if (seq !== request_seq.current) return;
-      set_error_msg(e?.message || "지원서 정보를 불러오지 못했습니다.");
+      set_error_msg((e as Error & { code?: string })?.message || "지원서 정보를 불러오지 못했습니다.");
     } finally {
       if (seq !== request_seq.current) return;
       set_loading(false);
@@ -218,9 +243,9 @@ export default function ApplyForm() {
       set_file_url_loading(true);
       try {
         // ✅ key라면 presigned GET 발급
-        const raw = await owner_issue_application_download_url(
-          club_id,
-          club_member_id,
+        const raw: unknown = await owner_issue_application_download_url(
+          club_id ?? "",
+          club_member_id ?? "",
           file_key,
         );
         const data = unwrap_api(raw);
@@ -230,10 +255,10 @@ export default function ApplyForm() {
           data?.presignedUrl ??
           data?.url ??
           data?.downloadUrl ??
-          raw?.preSignedUrl ??
-          raw?.presignedUrl ??
-          raw?.url ??
-          raw?.downloadUrl ??
+          (raw as Record<string, unknown>)?.preSignedUrl ??
+          (raw as Record<string, unknown>)?.presignedUrl ??
+          (raw as Record<string, unknown>)?.url ??
+          (raw as Record<string, unknown>)?.downloadUrl ??
           "";
 
         set_file_url(url ? String(url) : "");
@@ -248,7 +273,7 @@ export default function ApplyForm() {
     run();
   }, [club_id, club_member_id, file_key]);
 
-  const on_change_decision = async (next) => {
+  const on_change_decision = async (next: string) => {
     if (!club_id || !club_member_id) return;
     if (saving) return;
 
@@ -264,9 +289,9 @@ export default function ApplyForm() {
         decision_to_api(next),
       );
       await load_detail();
-    } catch (e) {
+    } catch (e: unknown) {
       setDecision(prev);
-      alert(e?.message || "상태 변경에 실패했습니다.");
+      alert((e as Error & { code?: string })?.message || "상태 변경에 실패했습니다.");
     } finally {
       set_saving(false);
     }
@@ -414,7 +439,7 @@ export default function ApplyForm() {
               const is_file = is_file_question_content(qc);
 
               return (
-                <div key={q?.questionId ?? `${idx}-${qc}`}>
+                <div key={String(q?.questionId ?? `${idx}-${qc}`)}>
                   <label className="field_label">
                     {qc || `질문 ${idx + 1}`}
                   </label>

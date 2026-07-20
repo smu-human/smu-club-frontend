@@ -1,4 +1,4 @@
-// src/pages/apply_form_edit/apply_form_edit.jsx
+// src/pages/apply_form_edit/apply_form_edit.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/globals.css";
@@ -9,19 +9,26 @@ import {
   is_logged_in,
 } from "../../lib/api";
 
-function normalize_content(s) {
+interface LocalQuestion {
+  questionId: string | number;
+  orderNum: number;
+  content: string;
+  type: string;
+}
+
+function normalize_content(s: unknown): string {
   return String(s || "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function is_file_question_content(content) {
+function is_file_question_content(content: string): boolean {
   return normalize_content(content).toLowerCase() === "파일추가";
 }
 
-function dedupe_questions(list) {
-  const out = [];
-  const seen = new Set();
+function dedupe_questions(list: Array<Record<string, unknown>>): LocalQuestion[] {
+  const out: LocalQuestion[] = [];
+  const seen = new Set<string>();
   let has_file = false;
 
   for (const q of list || []) {
@@ -33,7 +40,7 @@ function dedupe_questions(list) {
       if (has_file) continue;
       has_file = true;
       out.push({
-        questionId: q?.questionId ?? q?.id ?? `q-${crypto.randomUUID()}`,
+        questionId: (q?.questionId ?? q?.id ?? `q-${crypto.randomUUID()}`) as string | number,
         orderNum: out.length,
         content: "파일추가",
         type: "file",
@@ -46,7 +53,7 @@ function dedupe_questions(list) {
     seen.add(key);
 
     out.push({
-      questionId: q?.questionId ?? q?.id ?? `q-${crypto.randomUUID()}`,
+      questionId: (q?.questionId ?? q?.id ?? `q-${crypto.randomUUID()}`) as string | number,
       orderNum: out.length,
       content,
       type: "text",
@@ -58,16 +65,16 @@ function dedupe_questions(list) {
 
 export default function ApplyFormEdit() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const club_id = useMemo(() => (id == null ? null : String(id)), [id]);
 
   const [dept, setDept] = useState("");
   const [studentId, setStudentId] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [gender, setGender] = useState("");
+  const [_gender, _setGender] = useState("");
 
-  const [questions, setQuestions] = useState([]); // text only in UI
+  const [questions, setQuestions] = useState<LocalQuestion[]>([]); // text only in UI
   const [has_file_upload, set_has_file_upload] = useState(false); // file fixed item
   const [adding, setAdding] = useState(false);
   const [newQuestion, setNewQuestion] = useState("");
@@ -93,26 +100,29 @@ export default function ApplyFormEdit() {
       set_error_msg("");
 
       try {
-        const data = await fetch_owner_club_questions(club_id);
+        const data: unknown = await fetch_owner_club_questions(club_id);
         const list = Array.isArray(data) ? data : [];
 
         const normalized = list
-          .map((q) => ({
-            questionId: q?.questionId ?? q?.id ?? null,
-            orderNum: typeof q?.orderNum === "number" ? q.orderNum : 0,
-            content: q?.content ?? q?.label ?? "",
-          }))
-          .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+          .map((q: unknown) => {
+            const qo = q as Record<string, unknown>;
+            return {
+              questionId: (qo?.questionId ?? qo?.id ?? null) as string | number | null,
+              orderNum: typeof qo?.orderNum === "number" ? qo.orderNum : 0,
+              content: (qo?.content ?? qo?.label ?? "") as string,
+            };
+          })
+          .sort((a: { orderNum: number }, b: { orderNum: number }) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
 
-        const deduped = dedupe_questions(normalized);
+        const deduped = dedupe_questions(normalized as Array<Record<string, unknown>>);
 
         const file_item = deduped.find((q) => q.type === "file");
         set_has_file_upload(!!file_item);
 
         const only_text = deduped.filter((q) => q.type !== "file");
         setQuestions(only_text);
-      } catch (e) {
-        set_error_msg(e?.message || "질문 목록을 불러오지 못했습니다.");
+      } catch (e: unknown) {
+        set_error_msg((e as Error)?.message || "질문 목록을 불러오지 못했습니다.");
         setQuestions([]);
         set_has_file_upload(false);
       } finally {
@@ -133,7 +143,7 @@ export default function ApplyFormEdit() {
     }
 
     setQuestions((prev) => {
-      const merged = [
+      const merged: LocalQuestion[] = [
         ...(prev || []),
         {
           questionId: `local-${crypto.randomUUID()}`,
@@ -143,8 +153,8 @@ export default function ApplyFormEdit() {
         },
       ];
 
-      const out = [];
-      const seen = new Set();
+      const out: LocalQuestion[] = [];
+      const seen = new Set<string>();
       for (const q of merged) {
         const c = normalize_content(q.content);
         if (!c) continue;
@@ -160,7 +170,7 @@ export default function ApplyFormEdit() {
     setAdding(false);
   };
 
-  const removeQuestion = (qid) => {
+  const removeQuestion = (qid: string | number) => {
     setQuestions((prev) => {
       const filtered = (prev || []).filter(
         (q) => String(q.questionId) !== String(qid),
@@ -169,7 +179,7 @@ export default function ApplyFormEdit() {
     });
   };
 
-  const updateQuestionContent = (qid, content) => {
+  const updateQuestionContent = (qid: string | number, content: string) => {
     setQuestions((prev) => {
       const next = (prev || []).map((q) =>
         String(q.questionId) === String(qid) ? { ...q, content } : q,
@@ -189,8 +199,8 @@ export default function ApplyFormEdit() {
         .map((q) => normalize_content(q.content))
         .filter((c) => c.length > 0);
 
-      const seen = new Set();
-      const unique_texts = [];
+      const seen = new Set<string>();
+      const unique_texts: string[] = [];
       for (const c of cleaned) {
         const key = c.toLowerCase();
         if (seen.has(key)) continue;
@@ -221,12 +231,15 @@ export default function ApplyFormEdit() {
           type: "text",
         })),
       );
-    } catch (e) {
-      set_error_msg(e?.message || "저장에 실패했습니다.");
+    } catch (e: unknown) {
+      set_error_msg((e as Error & { code?: string })?.message || "저장에 실패했습니다.");
     } finally {
       setSaving(false);
     }
   };
+
+  // Suppress unused variable warnings for the read-only preview fields
+  void dept; void studentId; void name; void phone;
 
   return (
     <div className="page-root">
@@ -278,6 +291,7 @@ export default function ApplyFormEdit() {
                   value={dept}
                   readOnly
                   disabled
+                  onChange={() => { setDept(dept); }}
                 />
                 <label className="field_label" htmlFor="sid">
                   학번
@@ -289,6 +303,7 @@ export default function ApplyFormEdit() {
                   value={studentId}
                   readOnly
                   disabled
+                  onChange={() => { setStudentId(studentId); }}
                 />
                 <label className="field_label" htmlFor="uname">
                   이름
@@ -300,6 +315,7 @@ export default function ApplyFormEdit() {
                   value={name}
                   readOnly
                   disabled
+                  onChange={() => { setName(name); }}
                 />
                 <label className="field_label" htmlFor="phone">
                   전화번호
@@ -311,6 +327,7 @@ export default function ApplyFormEdit() {
                   value={phone}
                   readOnly
                   disabled
+                  onChange={() => { setPhone(phone); }}
                 />
                 {/*
                 <fieldset className="fieldset">
@@ -356,7 +373,7 @@ export default function ApplyFormEdit() {
                       .slice()
                       .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0))
                       .map((q, idx) => (
-                        <div key={q.questionId} className="q_item">
+                        <div key={String(q.questionId)} className="q_item">
                           <label className="field_label">{idx + 1}. 질문</label>
 
                           <textarea

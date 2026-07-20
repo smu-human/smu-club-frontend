@@ -1,12 +1,15 @@
+import type { ApplicationResult } from "../lib/types";
 import "./result.css";
 
-export default function ApplicationResultModal({
-  open,
-  loading,
-  error,
-  result,
-  onClose,
-}) {
+interface Props {
+  open: boolean;
+  loading: boolean;
+  error: string;
+  result: ApplicationResult | null;
+  onClose: () => void;
+}
+
+export default function ApplicationResultModal({ open, loading, error, result, onClose }: Props) {
   if (!open) return null;
 
   const status = (result?.status || "").toUpperCase();

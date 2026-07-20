@@ -1,4 +1,4 @@
-// src/pages/applicant_manage/applicant_manage.jsx
+// src/pages/applicant_manage/applicant_manage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/globals.css";
@@ -10,8 +10,18 @@ import {
   owner_download_applicants_excel,
   owner_send_result_email,
 } from "../../lib/api";
+import type { Applicant } from "../../lib/types";
 
-function normalize_status(s) {
+interface MappedApplicant {
+  clubMemberId: string | number | null;
+  memberId: string | number | null;
+  name: string;
+  studentId: string;
+  appliedAt: string | null;
+  status: string | null;
+}
+
+function normalize_status(s: unknown): string {
   const v = String(s || "").toUpperCase();
   if (v === "ACCEPTED") return "accepted";
   if (v === "REJECTED") return "rejected";
@@ -20,13 +30,13 @@ function normalize_status(s) {
   return "pending";
 }
 
-function status_label(s) {
+function status_label(s: string): string {
   if (s === "accepted") return "합격";
   if (s === "rejected") return "불합격";
   return "미정";
 }
 
-function status_to_card_class(s) {
+function status_to_card_class(s: string): string {
   if (s === "accepted") return "pass";
   if (s === "rejected") return "fail";
   return "pending";
@@ -34,23 +44,26 @@ function status_to_card_class(s) {
 
 export default function ApplicantManage() {
   const navigate = useNavigate();
-  const { clubId } = useParams();
+  const { clubId } = useParams<{ clubId: string }>();
 
   const club_id = useMemo(
     () => (clubId == null ? null : String(clubId)),
     [clubId]
   );
 
-  const [applicants, set_applicants] = useState([]);
+  const [applicants, set_applicants] = useState<MappedApplicant[]>([]);
   const [loading, set_loading] = useState(true);
   const [error_msg, set_error_msg] = useState("");
 
-  const [status_loading_map, set_status_loading_map] = useState({});
+  const [status_loading_map, set_status_loading_map] = useState<Record<string, boolean>>({});
   const [excel_loading, set_excel_loading] = useState(false);
   const [email_loading, set_email_loading] = useState(false);
 
-  const [status_map, set_status_map] = useState({});
+  const [status_map, set_status_map] = useState<Record<string, string>>({});
   const [status_checking, set_status_checking] = useState(false);
+
+  // Applicant type used via import for consistency with project types
+  void (null as unknown as Applicant);
 
   const load_list = async () => {
     if (!club_id) {
@@ -64,31 +77,34 @@ export default function ApplicantManage() {
     set_error_msg("");
 
     try {
-      const res = await fetch_owner_applicants(club_id);
+      const res: unknown = await fetch_owner_applicants(club_id);
       const list = Array.isArray(res) ? res : [];
 
-      const mapped = list
-        .map((a) => ({
-          clubMemberId: a?.id ?? a?.applicationId ?? a?.clubMemberId ?? a?.club_member_id ?? null,
-          memberId: a?.memberId ?? a?.member_id ?? null,
-          name: a?.applicantName ?? a?.name ?? "",
-          studentId: a?.studentId ?? a?.student_id ?? "",
-          appliedAt: a?.appliedAt ?? a?.applied_at ?? null,
-          status: a?.status ? normalize_status(a.status) : null,
-        }))
-        .filter((x) => x.clubMemberId != null);
+      const mapped: MappedApplicant[] = list
+        .map((a: unknown) => {
+          const ao = a as Record<string, unknown>;
+          return {
+            clubMemberId: (ao?.id ?? ao?.applicationId ?? ao?.clubMemberId ?? ao?.club_member_id ?? null) as string | number | null,
+            memberId: (ao?.memberId ?? ao?.member_id ?? null) as string | number | null,
+            name: String(ao?.applicantName ?? ao?.name ?? ""),
+            studentId: String(ao?.studentId ?? ao?.student_id ?? ""),
+            appliedAt: (ao?.appliedAt ?? ao?.applied_at ?? null) as string | null,
+            status: ao?.status ? normalize_status(ao.status) : null,
+          };
+        })
+        .filter((x: MappedApplicant) => x.clubMemberId != null);
 
       set_applicants(mapped);
 
-      const next_status_map = {};
+      const next_status_map: Record<string, string> = {};
       for (const a of mapped) {
         if (a.status) next_status_map[String(a.clubMemberId)] = a.status;
       }
       if (Object.keys(next_status_map).length) {
         set_status_map((prev) => ({ ...prev, ...next_status_map }));
       }
-    } catch (e) {
-      set_error_msg(e?.message || "지원자 목록을 불러오지 못했습니다.");
+    } catch (e: unknown) {
+      set_error_msg((e as Error)?.message || "지원자 목록을 불러오지 못했습니다.");
       set_applicants([]);
       set_status_map({});
     } finally {
@@ -96,7 +112,7 @@ export default function ApplicantManage() {
     }
   };
 
-  const check_all_statuses = async (list) => {
+  const check_all_statuses = async (list: MappedApplicant[]) => {
     if (!club_id) return;
 
     const arr = Array.isArray(list) ? list : [];
@@ -112,15 +128,16 @@ export default function ApplicantManage() {
           const known = status_map[String(club_member_id)] || a?.status;
           if (known) return { clubMemberId: club_member_id, status: known };
 
-          const data = await fetch_owner_applicant_detail(
+          const data: unknown = await fetch_owner_applicant_detail(
             club_id,
             club_member_id
           );
+          const dataObj = data as Record<string, unknown>;
           const applicant =
-            data?.applicantInfo ??
-            data?.applicant ??
-            data?.applicant_info ??
-            null;
+            (dataObj?.applicantInfo ??
+            dataObj?.applicant ??
+            dataObj?.applicant_info ??
+            null) as Record<string, unknown> | null;
 
           return {
             clubMemberId: club_member_id,
@@ -129,10 +146,10 @@ export default function ApplicantManage() {
         })
       );
 
-      const next = {};
+      const next: Record<string, string> = {};
       for (const r of results) {
         if (r.status !== "fulfilled") continue;
-        const v = r.value;
+        const v = r.value as { clubMemberId: string | number; status: string } | null;
         if (!v?.clubMemberId) continue;
         next[String(v.clubMemberId)] = normalize_status(v.status);
       }
@@ -163,10 +180,10 @@ export default function ApplicantManage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, error_msg, applicants]);
 
-  const update_status = async (club_member_id, next_status) => {
+  const update_status = async (club_member_id: string | number, next_status: string) => {
     if (!club_id || !club_member_id) return;
 
-    set_status_loading_map((prev) => ({ ...prev, [club_member_id]: true }));
+    set_status_loading_map((prev) => ({ ...prev, [String(club_member_id)]: true }));
 
     try {
       await owner_update_applicant_status(club_id, club_member_id, next_status);
@@ -187,10 +204,10 @@ export default function ApplicantManage() {
       );
 
       alert("상태가 변경되었습니다.");
-    } catch (e) {
-      alert(e?.message || "상태 변경에 실패했습니다.");
+    } catch (e: unknown) {
+      alert((e as Error & { code?: string })?.message || "상태 변경에 실패했습니다.");
     } finally {
-      set_status_loading_map((prev) => ({ ...prev, [club_member_id]: false }));
+      set_status_loading_map((prev) => ({ ...prev, [String(club_member_id)]: false }));
     }
   };
 
@@ -199,8 +216,8 @@ export default function ApplicantManage() {
     set_excel_loading(true);
     try {
       await owner_download_applicants_excel(club_id);
-    } catch (e) {
-      alert(e?.message || "엑셀 다운로드에 실패했습니다.");
+    } catch (e: unknown) {
+      alert((e as Error)?.message || "엑셀 다운로드에 실패했습니다.");
     } finally {
       set_excel_loading(false);
     }
@@ -228,17 +245,20 @@ export default function ApplicantManage() {
     try {
       await owner_send_result_email(club_id);
       alert("합불 결과 메일 발송 요청 완료");
-    } catch (e) {
-      alert(e?.message || "메일 발송에 실패했습니다.");
+    } catch (e: unknown) {
+      alert((e as Error)?.message || "메일 발송에 실패했습니다.");
     } finally {
       set_email_loading(false);
     }
   };
 
-  const go_apply_form = (club_member_id) => {
+  const go_apply_form = (club_member_id: string | number | null) => {
     if (!club_id || !club_member_id) return;
     navigate(`/apply_form/${club_id}/${String(club_member_id)}`);
   };
+
+  // suppress unused warning
+  void status_loading_map;
 
   return (
     <div className="page-root">

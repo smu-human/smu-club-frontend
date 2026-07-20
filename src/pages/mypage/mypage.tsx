@@ -1,4 +1,4 @@
-// src/pages/mypage/mypage.jsx
+// src/pages/mypage/mypage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/globals.css";
@@ -13,6 +13,7 @@ import {
   apiLogout,
   fetch_application_result,
 } from "../../lib/api";
+import { Application, ManagedClub, ApplicationResult } from "../../lib/types";
 
 const HIDDEN_CLUBS_KEY = "smu_hidden_club_ids_v1";
 
@@ -20,102 +21,90 @@ export default function MyPage() {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
-  const [applications, setApplications] = useState([]);
-  const [managed_clubs, set_managed_clubs] = useState([]);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [managed_clubs, set_managed_clubs] = useState<ManagedClub[]>([]);
   const [loading, setLoading] = useState(true);
   const [error_msg, set_error_msg] = useState("");
 
   const [result_open, set_result_open] = useState(false);
   const [result_loading, set_result_loading] = useState(false);
   const [result_error, set_result_error] = useState("");
-  const [result_data, set_result_data] = useState(null);
+  const [result_data, set_result_data] = useState<ApplicationResult | null>(null);
 
   const [is_owner, set_is_owner] = useState(false);
 
-  const [hidden_ids, set_hidden_ids] = useState(() => {
+  const [hidden_ids] = useState<Set<string>>(() => {
     try {
       const raw = localStorage.getItem(HIDDEN_CLUBS_KEY);
       const arr = raw ? JSON.parse(raw) : [];
-      return new Set(Array.isArray(arr) ? arr.map(String) : []);
+      return new Set<string>(Array.isArray(arr) ? arr.map(String) : []);
     } catch {
-      return new Set();
+      return new Set<string>();
     }
   });
 
-  const persist_hidden = (nextSet) => {
-    try {
-      localStorage.setItem(HIDDEN_CLUBS_KEY, JSON.stringify([...nextSet]));
-    } catch {}
-  };
 
-  const hide_club = (club_id) => {
-    const id = String(club_id);
-    const next = new Set(hidden_ids);
-    next.add(id);
-    set_hidden_ids(next);
-    persist_hidden(next);
-  };
-
-  const unhide_all = () => {
-    const next = new Set();
-    set_hidden_ids(next);
-    persist_hidden(next);
-  };
-
-  const get_id = (obj) => {
+  const get_id = (obj: unknown): string | null => {
+    const o = obj as Record<string, unknown> | null | undefined;
     const v =
-      obj?.clubId ??
-      obj?.club_id ??
-      obj?.id ??
-      obj?.club?.clubId ??
-      obj?.club?.id ??
-      obj?.club?.club_id ??
-      obj?.application?.clubId ??
-      obj?.application?.club_id ??
-      obj?.clubInfo?.clubId ??
-      obj?.clubInfo?.id;
+      o?.clubId ??
+      o?.club_id ??
+      o?.id ??
+      (o?.club as Record<string, unknown> | undefined)?.clubId ??
+      (o?.club as Record<string, unknown> | undefined)?.id ??
+      (o?.club as Record<string, unknown> | undefined)?.club_id ??
+      (o?.application as Record<string, unknown> | undefined)?.clubId ??
+      (o?.application as Record<string, unknown> | undefined)?.club_id ??
+      (o?.clubInfo as Record<string, unknown> | undefined)?.clubId ??
+      (o?.clubInfo as Record<string, unknown> | undefined)?.id;
 
     return v === undefined || v === null ? null : String(v);
   };
 
-  const get_application_club_id = (app) => {
+  const get_application_club_id = (app: unknown): string | null => {
+    const a = app as Record<string, unknown> | null | undefined;
     const v =
-      app?.clubId ??
-      app?.club_id ??
-      app?.club?.clubId ??
-      app?.club?.id ??
-      app?.club?.club_id ??
-      app?.clubInfo?.clubId ??
-      app?.clubInfo?.id ??
-      app?.application?.clubId ??
-      app?.application?.club_id ??
-      app?.club_id_fk;
+      a?.clubId ??
+      a?.club_id ??
+      (a?.club as Record<string, unknown> | undefined)?.clubId ??
+      (a?.club as Record<string, unknown> | undefined)?.id ??
+      (a?.club as Record<string, unknown> | undefined)?.club_id ??
+      (a?.clubInfo as Record<string, unknown> | undefined)?.clubId ??
+      (a?.clubInfo as Record<string, unknown> | undefined)?.id ??
+      (a?.application as Record<string, unknown> | undefined)?.clubId ??
+      (a?.application as Record<string, unknown> | undefined)?.club_id ??
+      a?.club_id_fk;
     return v === undefined || v === null ? null : String(v);
   };
 
-  const get_name = (obj) =>
-    obj?.clubName ??
-    obj?.name ??
-    obj?.club?.clubName ??
-    obj?.club?.name ??
-    obj?.clubInfo?.clubName ??
-    obj?.clubInfo?.name ??
-    "동아리";
+  const get_name = (obj: unknown): string => {
+    const o = obj as Record<string, unknown> | null | undefined;
+    return (
+      (o?.clubName as string | undefined) ??
+      (o?.name as string | undefined) ??
+      (o?.club as Record<string, unknown> | undefined)?.clubName as string | undefined ??
+      (o?.club as Record<string, unknown> | undefined)?.name as string | undefined ??
+      (o?.clubInfo as Record<string, unknown> | undefined)?.clubName as string | undefined ??
+      (o?.clubInfo as Record<string, unknown> | undefined)?.name as string | undefined ??
+      "동아리"
+    );
+  };
 
-  const is_application_item = (a) => {
-    if (a?.applicationId != null) return true;
-    if (a?.applyId != null) return true;
-    if (a?.memberId != null) return true;
-    if (a?.status != null) return true;
-    if (a?.applicationStatus != null) return true;
-    if (a?.applyStatus != null) return true;
-    if (a?.appliedAt != null) return true;
+  const is_application_item = (a: unknown): boolean => {
+    const obj = a as Record<string, unknown> | null | undefined;
+    if (obj?.applicationId != null) return true;
+    if (obj?.applyId != null) return true;
+    if (obj?.memberId != null) return true;
+    if (obj?.status != null) return true;
+    if (obj?.applicationStatus != null) return true;
+    if (obj?.applyStatus != null) return true;
+    if (obj?.appliedAt != null) return true;
 
-    if (a?.president != null) return false;
-    if (a?.contact != null) return false;
-    if (a?.recruitingEnd != null) return false;
-    if (a?.clubRoom != null) return false;
-    if (a?.description != null) return false;
+    if (obj?.president != null) return false;
+    if (obj?.contact != null) return false;
+    if (obj?.recruitingEnd != null) return false;
+    if (obj?.clubRoom != null) return false;
+    if (obj?.description != null) return false;
 
     return true;
   };
@@ -149,7 +138,7 @@ export default function MyPage() {
           set_is_owner(false);
         }
       } catch (err) {
-        set_error_msg(err?.message || "마이페이지 정보를 불러오지 못했습니다.");
+        set_error_msg((err as Error & { code?: string })?.message || "마이페이지 정보를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -158,38 +147,38 @@ export default function MyPage() {
     load();
   }, [navigate]);
 
-  const open_result_modal = async (club_id) => {
+  const open_result_modal = async (club_id: unknown) => {
     set_result_open(true);
     set_result_loading(true);
     set_result_error("");
     set_result_data(null);
 
     try {
-      const data = await fetch_application_result(club_id);
+      const data = await fetch_application_result(String(club_id));
       set_result_data(data);
     } catch (e) {
-      set_result_error(e?.message || "결과를 불러오지 못했습니다.");
+      set_result_error((e as Error & { code?: string })?.message || "결과를 불러오지 못했습니다.");
     } finally {
       set_result_loading(false);
     }
   };
 
   const managed_ids = useMemo(() => {
-    return new Set((managed_clubs || []).map(get_id).filter((v) => v != null));
+    return new Set((managed_clubs || []).map(get_id).filter((v): v is string => v != null));
   }, [managed_clubs]);
 
   const pure_applications = useMemo(() => {
     return (applications || [])
       .filter((a) => get_application_club_id(a) != null)
       .filter((a) => is_application_item(a))
-      .filter((a) => !managed_ids.has(get_application_club_id(a)))
-      .filter((a) => !hidden_ids.has(get_application_club_id(a)));
+      .filter((a) => !managed_ids.has(get_application_club_id(a)!))
+      .filter((a) => !hidden_ids.has(get_application_club_id(a)!));
   }, [applications, managed_ids, hidden_ids]);
 
   const visible_managed_clubs = useMemo(() => {
     return (managed_clubs || [])
       .filter((c) => get_id(c) != null)
-      .filter((c) => !hidden_ids.has(get_id(c)));
+      .filter((c) => !hidden_ids.has(get_id(c)!));
   }, [managed_clubs, hidden_ids]);
 
   const handleLogout = async () => {
@@ -197,7 +186,7 @@ export default function MyPage() {
       await apiLogout();
       navigate("/");
     } catch (err) {
-      set_error_msg(err?.message || "로그아웃에 실패했습니다.");
+      set_error_msg((err as Error & { code?: string })?.message || "로그아웃에 실패했습니다.");
     }
   };
 

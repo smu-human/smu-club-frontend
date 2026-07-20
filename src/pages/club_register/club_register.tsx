@@ -1,4 +1,4 @@
-// src/pages/club_register/club_register.jsx
+// src/pages/club_register/club_register.tsx
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/globals.css";
@@ -9,8 +9,8 @@ import { owner_register_club, owner_upload_images } from "../../lib/api";
 
 export default function ClubRegister() {
   const navigate = useNavigate();
-  const editorRef = useRef(null);
-  const scroll_ref = useRef(null);
+  const editorRef = useRef<{ getInstance(): { getHTML(): string } } | null>(null);
+  const scroll_ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const scroll_to_top = () => {
@@ -43,10 +43,10 @@ export default function ClubRegister() {
   const [deadline, set_deadline] = useState("");
 
   // 이미지: File[] + 썸네일 URL[]
-  const [images, set_images] = useState([]);
-  const [thumb_urls, set_thumb_urls] = useState([]);
-  const drag_idx = useRef(null);
-  const [over_idx, set_over_idx] = useState(null);
+  const [images, set_images] = useState<File[]>([]);
+  const [thumb_urls, set_thumb_urls] = useState<string[]>([]);
+  const drag_idx = useRef<number | null>(null);
+  const [over_idx, set_over_idx] = useState<number | null>(null);
 
   const [is_saving, set_is_saving] = useState(false);
 
@@ -55,7 +55,7 @@ export default function ClubRegister() {
   const [show_live_preview, set_show_live_preview] = useState(true);
   const [is_editor_fullscreen, set_is_editor_fullscreen] = useState(false);
 
-  const preview_timer_ref = useRef(null);
+  const preview_timer_ref = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sync_preview_from_editor = () => {
     if (preview_timer_ref.current) clearTimeout(preview_timer_ref.current);
@@ -79,7 +79,7 @@ export default function ClubRegister() {
 
   // ESC로 풀스크린 닫기
   useEffect(() => {
-    const on_key = (e) => {
+    const on_key = (e: KeyboardEvent) => {
       if (e.key === "Escape") set_is_editor_fullscreen(false);
     };
     window.addEventListener("keydown", on_key);
@@ -93,7 +93,7 @@ export default function ClubRegister() {
     };
   }, [thumb_urls]);
 
-  const on_pick_images = (e) => {
+  const on_pick_images = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const total = images.length + files.length;
 
@@ -110,15 +110,15 @@ export default function ClubRegister() {
     e.target.value = "";
   };
 
-  const remove_image = (idx) => {
+  const remove_image = (idx: number) => {
     URL.revokeObjectURL(thumb_urls[idx]);
     set_images((prev) => prev.filter((_, i) => i !== idx));
     set_thumb_urls((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const reorder_images = (from, to) => {
+  const reorder_images = (from: number, to: number) => {
     if (from === to) return;
-    const reorder = (arr) => {
+    const reorder = <T,>(arr: T[]): T[] => {
       const next = [...arr];
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
@@ -136,7 +136,7 @@ export default function ClubRegister() {
     }
     set_is_saving(true);
     try {
-      let uploadedImageFileNames = [];
+      let uploadedImageFileNames: string[] = [];
       if (images.length > 0) {
         uploadedImageFileNames = await owner_upload_images(images);
       }
@@ -155,8 +155,8 @@ export default function ClubRegister() {
 
       alert("동아리가 등록되었습니다.");
       navigate("/admin/dashboard");
-    } catch (e) {
-      alert(e?.message || "등록에 실패했습니다.");
+    } catch (err) {
+      alert((err as Error & { code?: string })?.message || "등록에 실패했습니다.");
     } finally {
       set_is_saving(false);
     }
@@ -207,7 +207,9 @@ export default function ClubRegister() {
                     onDragOver={(e) => { e.preventDefault(); set_over_idx(idx); }}
                     onDragLeave={() => set_over_idx(null)}
                     onDrop={() => {
-                      reorder_images(drag_idx.current, idx);
+                      if (drag_idx.current !== null) {
+                        reorder_images(drag_idx.current, idx);
+                      }
                       drag_idx.current = null;
                       set_over_idx(null);
                     }}
@@ -264,7 +266,7 @@ export default function ClubRegister() {
               className="cr_field_input"
               type="text"
               value={club_name}
-              onChange={(e) => set_club_name(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_club_name(e.target.value)}
             />
 
             <label className="cr_field_label" htmlFor="clubOneLine">동아리 한줄 소개</label>
@@ -273,7 +275,7 @@ export default function ClubRegister() {
               className="cr_field_input"
               type="text"
               value={club_one_line}
-              onChange={(e) => set_club_one_line(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_club_one_line(e.target.value)}
             />
 
             <label className="cr_field_label" htmlFor="leaderName">회장</label>
@@ -282,7 +284,7 @@ export default function ClubRegister() {
               className="cr_field_input"
               type="text"
               value={leader_name}
-              onChange={(e) => set_leader_name(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_leader_name(e.target.value)}
             />
 
             <label className="cr_field_label" htmlFor="phone">연락처 (- 없이 숫자만 입력)</label>
@@ -291,7 +293,7 @@ export default function ClubRegister() {
               className="cr_field_input"
               type="tel"
               value={phone}
-              onChange={(e) => set_phone(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_phone(e.target.value)}
             />
 
             <label className="cr_field_label" htmlFor="deadline">모집 마감일</label>
@@ -301,7 +303,7 @@ export default function ClubRegister() {
               type="date"
               value={deadline}
               min={today_str}
-              onChange={(e) => set_deadline(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_deadline(e.target.value)}
             />
           </div>
         </section>

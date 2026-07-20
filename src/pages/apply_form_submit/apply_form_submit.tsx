@@ -1,4 +1,4 @@
-// src/pages/apply_form_submit/apply_form_submit.jsx
+// src/pages/apply_form_submit/apply_form_submit.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "../../styles/globals.css";
@@ -8,16 +8,23 @@ import {
   submit_public_application,
 } from "../../lib/api";
 
+interface CustomQuestion {
+  questionId: number | string;
+  orderNum: number;
+  questionContent: string;
+}
+
 export default function ApplyFormSubmit() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const location = useLocation();
 
   const club_id = useMemo(() => {
+    const loc_state = location?.state as Record<string, unknown> | null;
     const from_state =
-      location?.state?.clubId ??
-      location?.state?.club?.id ??
-      location?.state?.club?.clubId;
+      loc_state?.clubId ??
+      (loc_state?.club as Record<string, unknown> | undefined)?.id ??
+      (loc_state?.club as Record<string, unknown> | undefined)?.clubId;
     const v = from_state ?? id ?? "";
     return v === undefined || v === null ? "" : String(v);
   }, [location, id]);
@@ -26,7 +33,7 @@ export default function ApplyFormSubmit() {
   const [submitting, setSubmitting] = useState(false);
   const [error_msg, set_error_msg] = useState("");
 
-  const [custom_questions, set_custom_questions] = useState([]);
+  const [custom_questions, set_custom_questions] = useState<CustomQuestion[]>([]);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -34,7 +41,7 @@ export default function ApplyFormSubmit() {
   const [studentId, setStudentId] = useState("");
   const [major, setMajor] = useState("");
 
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const load = async () => {
@@ -48,28 +55,32 @@ export default function ApplyFormSubmit() {
       set_error_msg("");
 
       try {
-        const questions = await fetch_public_application_form(club_id);
+        const questions: unknown = await fetch_public_application_form(club_id);
+        const qs = Array.isArray(questions) ? questions : [];
 
-        const mapped = questions
-          .map((q) => ({
-            questionId: q.questionId,
-            orderNum: typeof q.orderNum === "number" ? q.orderNum : 0,
-            questionContent: q.content ?? "",
-          }))
-          .filter((q) => q.questionContent.length > 0)
-          .sort((a, b) => a.orderNum - b.orderNum);
+        const mapped: CustomQuestion[] = qs
+          .map((q: unknown) => {
+            const qo = q as Record<string, unknown>;
+            return {
+              questionId: (qo.questionId ?? 0) as number | string,
+              orderNum: typeof qo.orderNum === "number" ? qo.orderNum : 0,
+              questionContent: String(qo.content ?? ""),
+            };
+          })
+          .filter((q: CustomQuestion) => q.questionContent.length > 0)
+          .sort((a: CustomQuestion, b: CustomQuestion) => a.orderNum - b.orderNum);
 
         set_custom_questions(mapped);
 
         setAnswers(() => {
-          const next = {};
+          const next: Record<string, string> = {};
           for (const q of mapped) {
             next[String(q.questionId)] = "";
           }
           return next;
         });
-      } catch (e) {
-        set_error_msg(e?.message || "지원서 정보를 불러오지 못했습니다.");
+      } catch (e: unknown) {
+        set_error_msg((e as Error)?.message || "지원서 정보를 불러오지 못했습니다.");
         set_custom_questions([]);
       } finally {
         setLoading(false);
@@ -79,7 +90,7 @@ export default function ApplyFormSubmit() {
     load();
   }, [club_id]);
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!club_id || submitting) return;
 
@@ -105,8 +116,8 @@ export default function ApplyFormSubmit() {
 
       alert("지원서가 제출되었습니다.");
       navigate(club_id ? `/club/${club_id}` : "/");
-    } catch (err) {
-      set_error_msg(err?.message || "제출에 실패했습니다.");
+    } catch (err: unknown) {
+      set_error_msg((err as Error & { code?: string })?.message || "제출에 실패했습니다.");
     } finally {
       setSubmitting(false);
     }

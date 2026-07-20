@@ -39,9 +39,35 @@
   object-fit: contain;
 }
 
-.adm-logout-btn {
+.adm-header-actions {
   position: absolute;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-mypage-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #0e207f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.adm-mypage-btn:hover {
+  background: #1a31a8;
+}
+
+.adm-logout-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -71,67 +97,38 @@
   margin: 0 auto;
 }
 
-/* 상단 Summary Cards */
-.adm-summary-grid {
+/* 본문 3-box 그리드 */
+.adm-body-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 28px;
 }
 
-.adm-summary-card {
-  background: linear-gradient(135deg, #4f6af0 0%, #7c4fca 100%);
-  border-radius: 16px;
-  padding: 20px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 4px 16px rgba(79, 106, 240, 0.3);
-  position: relative;
-  overflow: hidden;
+/* 동아리 페이지 미리보기 패널 (좌측, 2행 스팬) */
+.adm-panel-preview {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  min-height: 600px;
 }
 
-.adm-summary-card::after {
-  content: "";
-  position: absolute;
-  right: -20px;
-  top: -20px;
-  width: 80px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
+.adm-preview-iframe {
+  width: 100%;
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  min-height: 520px;
+  pointer-events: none;
 }
 
-.adm-summary-icon {
-  color: rgba(255, 255, 255, 0.9);
-  flex-shrink: 0;
+.adm-preview-placeholder {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-}
-
-.adm-summary-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.adm-summary-label {
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.2;
-}
-
-/* 본문 3단 그리드 */
-.adm-body-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  color: #9ca3af;
+  font-size: 14px;
+  min-height: 520px;
 }
 
 /* 패널 공통 */
@@ -449,11 +446,18 @@
 /* 반응형: 태블릿 */
 @media (max-width: 900px) {
   .adm-body-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
   }
 
-  .adm-panel-calendar {
-    grid-column: 1 / -1;
+  .adm-panel-preview {
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 400px;
+  }
+
+  .adm-preview-iframe {
+    min-height: 340px;
   }
 }
 
@@ -463,17 +467,19 @@
     padding: 16px 16px 32px;
   }
 
-  .adm-summary-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
   .adm-body-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
   }
 
-  .adm-panel-calendar {
+  .adm-panel-preview {
     grid-column: auto;
+    grid-row: auto;
+    min-height: 320px;
+  }
+
+  .adm-preview-iframe {
+    min-height: 260px;
   }
 
   .adm-logo {

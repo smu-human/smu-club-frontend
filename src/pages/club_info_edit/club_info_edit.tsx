@@ -1,10 +1,15 @@
-// src/pages/club_info_edit/club_info_edit.jsx
+// src/pages/club_info_edit/club_info_edit.tsx
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/globals.css";
 import "./club_info_edit.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
+
+interface DisplayImage {
+  url: string;
+  key?: string;
+}
 
 const MOCK_CLUB = {
   name: "예시 동아리",
@@ -13,10 +18,10 @@ const MOCK_CLUB = {
   contact: "010-1234-5678",
   recruitingEnd: "",
   description: "",
-  images: [],
+  images: [] as DisplayImage[],
 };
 
-function to_display_name(v) {
+function to_display_name(v: unknown): string {
   const s = String(v || "");
   try {
     const decoded = decodeURIComponent(s);
@@ -28,8 +33,8 @@ function to_display_name(v) {
 
 export default function ClubInfoEdit() {
   const navigate = useNavigate();
-  const { clubId } = useParams();
-  const editorRef = useRef(null);
+  const { clubId } = useParams<{ clubId: string }>();
+  const editorRef = useRef<{ getInstance(): { getHTML(): string } } | null>(null);
 
   const today_str = new Date().toISOString().slice(0, 10);
 
@@ -39,18 +44,18 @@ export default function ClubInfoEdit() {
   const [contact, set_contact] = useState(MOCK_CLUB.contact);
   const [deadline, set_deadline] = useState(MOCK_CLUB.recruitingEnd);
 
-  const [display_images, set_display_images] = useState([]); // { url, key } — 기존 이미지
-  const [new_images, set_new_images] = useState([]); // File[] — 새로 추가
+  const [display_images, set_display_images] = useState<DisplayImage[]>([]); // { url, key } — 기존 이미지
+  const [new_images, set_new_images] = useState<File[]>([]); // File[] — 새로 추가
 
   const [active_idx, set_active_idx] = useState(0);
-  const carousel_ref = useRef(null);
+  const carousel_ref = useRef<HTMLDivElement | null>(null);
 
   const [editor_html] = useState(MOCK_CLUB.description);
   const [preview_html, set_preview_html] = useState(MOCK_CLUB.description);
   const [show_preview, set_show_preview] = useState(true);
   const [is_fullscreen, set_is_fullscreen] = useState(false);
 
-  const preview_timer = useRef(null);
+  const preview_timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sync_preview = () => {
     if (preview_timer.current) clearTimeout(preview_timer.current);
@@ -61,7 +66,7 @@ export default function ClubInfoEdit() {
   };
 
   useEffect(() => {
-    const on_key = (e) => {
+    const on_key = (e: KeyboardEvent) => {
       if (e.key === "Escape") set_is_fullscreen(false);
     };
     window.addEventListener("keydown", on_key);
@@ -77,7 +82,7 @@ export default function ClubInfoEdit() {
     ...new_images.map((f) => URL.createObjectURL(f)),
   ];
 
-  const go_to = (next_idx) => {
+  const go_to = (next_idx: number) => {
     if (!carousel_ref.current || all_image_urls.length === 0) return;
     const total = all_image_urls.length;
     const clamped = ((next_idx % total) + total) % total;
@@ -95,7 +100,7 @@ export default function ClubInfoEdit() {
     if (idx !== active_idx) set_active_idx(idx);
   };
 
-  const on_pick_images = (e) => {
+  const on_pick_images = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const total = display_images.length + new_images.length;
     const remain = 5 - total;
@@ -112,11 +117,11 @@ export default function ClubInfoEdit() {
     e.target.value = "";
   };
 
-  const remove_display_image = (idx) => {
+  const remove_display_image = (idx: number) => {
     set_display_images((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const remove_new_image = (idx) => {
+  const remove_new_image = (idx: number) => {
     set_new_images((prev) => prev.filter((_, i) => i !== idx));
   };
 
@@ -284,7 +289,7 @@ export default function ClubInfoEdit() {
                   className="val_input"
                   type="text"
                   value={club_name}
-                  onChange={(e) => set_club_name(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_club_name(e.target.value)}
                   placeholder="동아리명"
                 />
               </li>
@@ -294,7 +299,7 @@ export default function ClubInfoEdit() {
                   className="val_input"
                   type="text"
                   value={one_line}
-                  onChange={(e) => set_one_line(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_one_line(e.target.value)}
                   placeholder="한줄 소개"
                 />
               </li>
@@ -304,7 +309,7 @@ export default function ClubInfoEdit() {
                   className="val_input"
                   type="text"
                   value={president}
-                  onChange={(e) => set_president(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_president(e.target.value)}
                   placeholder="회장 이름"
                 />
               </li>
@@ -314,7 +319,7 @@ export default function ClubInfoEdit() {
                   className="val_input"
                   type="tel"
                   value={contact}
-                  onChange={(e) => set_contact(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_contact(e.target.value)}
                   placeholder="010-0000-0000"
                 />
               </li>
@@ -325,7 +330,7 @@ export default function ClubInfoEdit() {
                   type="date"
                   value={deadline}
                   min={today_str}
-                  onChange={(e) => set_deadline(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_deadline(e.target.value)}
                 />
               </li>
             </ul>
