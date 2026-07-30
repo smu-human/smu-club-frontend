@@ -258,7 +258,7 @@ export default function ClubPage() {
                   </li>
 
                   <li>
-                    <span className="label">연락처</span>
+                    <span className="label">인스타그램</span>
                     <span className="val">
                       {is_guest ? "로그인 필요" : club.contact || "-"}
                     </span>
