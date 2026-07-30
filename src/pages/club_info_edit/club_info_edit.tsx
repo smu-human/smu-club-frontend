@@ -314,13 +314,13 @@ export default function ClubInfoEdit() {
                 />
               </li>
               <li>
-                <span className="label">연락처</span>
+                <span className="label">인스타그램</span>
                 <input
                   className="val_input"
-                  type="tel"
+                  type="text"
                   value={contact}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_contact(e.target.value)}
-                  placeholder="010-0000-0000"
+                  placeholder="@계정명"
                 />
               </li>
               <li>

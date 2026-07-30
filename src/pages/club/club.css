@@ -294,16 +294,12 @@ body {
 
 /* 카드 자체는 반응형 */
 section.intro.card {
-  width: 450px;
-  max-width: 100%;
+  width: 500px;
   box-sizing: border-box;
 }
 
-/* ✅ 카드 안 텍스트 영역만 고정 폭 */
 section.intro.card .desc.rich_desc {
-  width: 340px; /* ← 텍스트 기준 폭 (원하면 380 / 400 / 450 가능) */
   max-width: 100%;
-  margin: 0 auto; /* 가운데 정렬 */
   box-sizing: border-box;
 }
 

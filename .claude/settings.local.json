@@ -25,7 +25,8 @@
       "Bash(del /f \"C:\\\\smu-club-frontend\\\\src\\\\pages\\\\apply_form_submit\\\\apply_form_submit.jsx\")",
       "Bash(del:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

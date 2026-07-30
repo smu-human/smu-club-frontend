@@ -121,8 +121,12 @@ body {
 .nav:hover {
   background: rgba(0, 0, 0, 0.5);
 }
-.nav.prev { left: 8px; }
-.nav.next { right: 8px; }
+.nav.prev {
+  left: 8px;
+}
+.nav.next {
+  right: 8px;
+}
 .dots {
   display: flex;
   gap: 6px;
@@ -247,7 +251,9 @@ body {
   outline: none;
   padding: 2px 4px;
   border-radius: 4px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 .val_input:focus {
   border-bottom-color: #0e207f;
@@ -263,7 +269,7 @@ body {
 
 /* ===== 소개 카드 ===== */
 section.intro.card {
-  width: 100%;
+  /* width: 100%; */
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -305,7 +311,9 @@ section.intro.card {
 .editor_grid.no_preview {
   grid-template-columns: 1fr;
 }
-.editor_col { min-width: 0; }
+.editor_col {
+  min-width: 0;
+}
 .preview_col {
   min-width: 0;
   border: 1px solid #e5e7eb;
@@ -360,7 +368,13 @@ section.intro.card {
 }
 .toastui-editor-contents,
 .toastui-editor-contents * {
-  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif !important;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Apple SD Gothic Neo",
+    "Noto Sans KR",
+    sans-serif !important;
 }
 
 /* 프리뷰 rich_desc 스타일 (club.css 동일) */
@@ -370,13 +384,40 @@ section.intro.card {
   color: #111827;
   word-break: break-word;
 }
-.desc.rich_desc h1 { font-size: 22px; margin: 18px 0 10px; font-weight: 800; }
-.desc.rich_desc h2 { font-size: 18px; margin: 16px 0 8px; font-weight: 750; }
-.desc.rich_desc h3 { font-size: 16px; margin: 14px 0 8px; font-weight: 700; }
-.desc.rich_desc p  { margin: 10px 0; }
-.desc.rich_desc ul, .desc.rich_desc ol { padding-left: 18px; margin: 10px 0; }
-.desc.rich_desc img { max-width: 100%; height: auto; border-radius: 12px; display: block; margin: 10px 0; }
-.desc.rich_desc a  { color: #0e207f; text-decoration: underline; }
+.desc.rich_desc h1 {
+  font-size: 22px;
+  margin: 18px 0 10px;
+  font-weight: 800;
+}
+.desc.rich_desc h2 {
+  font-size: 18px;
+  margin: 16px 0 8px;
+  font-weight: 750;
+}
+.desc.rich_desc h3 {
+  font-size: 16px;
+  margin: 14px 0 8px;
+  font-weight: 700;
+}
+.desc.rich_desc p {
+  margin: 10px 0;
+}
+.desc.rich_desc ul,
+.desc.rich_desc ol {
+  padding-left: 18px;
+  margin: 10px 0;
+}
+.desc.rich_desc img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  margin: 10px 0;
+}
+.desc.rich_desc a {
+  color: #0e207f;
+  text-decoration: underline;
+}
 .desc.rich_desc blockquote {
   border-left: 4px solid rgba(14, 32, 127, 0.35);
   margin: 12px 0;
