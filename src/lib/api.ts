@@ -18,7 +18,6 @@ import type {
   ApiErrorData,
   ClubPayload,
 } from "./types";
-import { DEV_MOCK, MOCK_ME, MOCK_CLUB, MOCK_CLUBS } from "./dev_mock";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api/v1";
 
@@ -288,10 +287,10 @@ async function owner_fetch_json<T = unknown>(path: string | URL, init: RequestIn
 }
 
 // ===== 인증 =====
-export async function apiLogin({ studentId, password }: { studentId: string; password: string }): Promise<ApiWrapper<{ accessToken: string; refreshToken: string }>> {
+export async function apiLogin({ username, password }: { username: string; password: string }): Promise<ApiWrapper<{ accessToken: string; refreshToken: string }>> {
   const data = await apiJson<{ accessToken: string; refreshToken: string }>("/public/auth/login", {
     method: "POST",
-    body: JSON.stringify({ studentId, password }),
+    body: JSON.stringify({ username, password }),
   });
 
   const accessToken = data?.data?.accessToken;
@@ -301,13 +300,6 @@ export async function apiLogin({ studentId, password }: { studentId: string; pas
   return data;
 }
 
-export async function apiSignup({ studentId, password, phoneNumber }: { studentId: string; password: string; phoneNumber: string }): Promise<ApiWrapper<unknown>> {
-  return apiJson("/public/auth/signup", {
-    method: "POST",
-    body: JSON.stringify({ studentId, password, phoneNumber }),
-  });
-}
-
 export async function apiLogout(): Promise<ApiWrapper<unknown>> {
   const res = await apiJson("/auth/logout", { method: "POST" });
   clear_tokens();
@@ -315,20 +307,17 @@ export async function apiLogout(): Promise<ApiWrapper<unknown>> {
 }
 
 export async function fetch_auth_me(): Promise<AuthMe> {
-  if (DEV_MOCK) return MOCK_ME;
   const res = await apiJson<AuthMe>("/auth/me", { method: "GET" });
   return res.data;
 }
 
 // ===== 공개 클럽 =====
 export async function fetch_public_clubs(): Promise<ClubListItem[]> {
-  if (DEV_MOCK) return MOCK_CLUBS;
   const res = await apiJson<ClubListItem[]>("/public/clubs", { method: "GET" });
   return res.data || [];
 }
 
 export async function fetch_public_club(club_id: string | number): Promise<Club> {
-  if (DEV_MOCK) return { ...MOCK_CLUB, id: Number(club_id) || MOCK_CLUB.id };
   const res = await apiJson<Club>(`/public/clubs/${club_id}`, { method: "GET" });
   return res.data;
 }
@@ -456,7 +445,6 @@ async function owner_put_presigned_url(preSignedUrl: string, file: File): Promis
 }
 
 export async function owner_upload_images(files: File[]): Promise<string[]> {
-  if (DEV_MOCK) return files.map((_, i) => `mock_image_${i + 1}.jpg`);
   if (!Array.isArray(files) || files.length === 0) return [];
 
   const issued = await owner_issue_upload_urls(files);
@@ -483,14 +471,13 @@ export async function owner_upload_images(files: File[]): Promise<string[]> {
 }
 
 export async function owner_register_club(payload: ClubPayload): Promise<ApiWrapper<unknown>> {
-  if (DEV_MOCK) return { status: "SUCCESS", data: { id: 1, ...payload } };
   return owner_fetch_json("/owner/clubs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: payload?.name ?? "",
       presidentName: payload?.presidentName ?? "",
-      presidentPhone: payload?.presidentPhone ?? "",
+      contact: payload?.contact ?? "",
       recruitDeadline: payload?.recruitDeadline ?? null,
       description: payload?.description ?? "",
       type: payload?.type ?? "CENTRAL",
@@ -500,7 +487,6 @@ export async function owner_register_club(payload: ClubPayload): Promise<ApiWrap
 }
 
 export async function fetch_owner_club_detail(club_id: string | number): Promise<Club | null> {
-  if (DEV_MOCK) return { ...MOCK_CLUB, id: Number(club_id) || MOCK_CLUB.id };
   const res = await owner_fetch_json<Club>(`/owner/clubs/${club_id}`, {
     method: "GET",
   });
@@ -508,14 +494,13 @@ export async function fetch_owner_club_detail(club_id: string | number): Promise
 }
 
 export async function owner_update_club(club_id: string | number, payload: ClubPayload): Promise<Club | null> {
-  if (DEV_MOCK) return { ...MOCK_CLUB, id: Number(club_id) || MOCK_CLUB.id, ...payload };
   const res = await owner_fetch_json<Club>(`/owner/clubs/${club_id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: payload?.name ?? "",
       presidentName: payload?.presidentName ?? "",
-      presidentPhone: payload?.presidentPhone ?? "",
+      contact: payload?.contact ?? "",
       recruitDeadline: payload?.recruitDeadline ?? null,
       description: payload?.description ?? "",
       type: payload?.type ?? "CENTRAL",

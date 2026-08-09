@@ -5,21 +5,12 @@ import "../../styles/globals.css";
 import "./club_info_edit.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
+import { fetch_owner_club_detail, owner_upload_images, owner_update_club } from "../../lib/api";
 
 interface DisplayImage {
   url: string;
   key?: string;
 }
-
-const MOCK_CLUB = {
-  name: "예시 동아리",
-  title: "동아리를 소개하는 한 줄 문구",
-  president: "홍길동",
-  contact: "010-1234-5678",
-  recruitingEnd: "",
-  description: "",
-  images: [] as DisplayImage[],
-};
 
 function to_display_name(v: unknown): string {
   const s = String(v || "");
@@ -34,15 +25,15 @@ function to_display_name(v: unknown): string {
 export default function ClubInfoEdit() {
   const navigate = useNavigate();
   const { clubId } = useParams<{ clubId: string }>();
-  const editorRef = useRef<{ getInstance(): { getHTML(): string } } | null>(null);
+  const editorRef = useRef<{ getInstance(): { getHTML(): string; setHTML(html: string): void } } | null>(null);
 
   const today_str = new Date().toISOString().slice(0, 10);
 
-  const [club_name, set_club_name] = useState(MOCK_CLUB.name);
-  const [one_line, set_one_line] = useState(MOCK_CLUB.title);
-  const [president, set_president] = useState(MOCK_CLUB.president);
-  const [contact, set_contact] = useState(MOCK_CLUB.contact);
-  const [deadline, set_deadline] = useState(MOCK_CLUB.recruitingEnd);
+  const [club_name, set_club_name] = useState("");
+  const [one_line, set_one_line] = useState("");
+  const [president, set_president] = useState("");
+  const [contact, set_contact] = useState("");
+  const [deadline, set_deadline] = useState("");
 
   const [display_images, set_display_images] = useState<DisplayImage[]>([]); // { url, key } — 기존 이미지
   const [new_images, set_new_images] = useState<File[]>([]); // File[] — 새로 추가
@@ -50,10 +41,11 @@ export default function ClubInfoEdit() {
   const [active_idx, set_active_idx] = useState(0);
   const carousel_ref = useRef<HTMLDivElement | null>(null);
 
-  const [editor_html] = useState(MOCK_CLUB.description);
-  const [preview_html, set_preview_html] = useState(MOCK_CLUB.description);
+  const [editor_html, set_editor_html] = useState("");
+  const [preview_html, set_preview_html] = useState("");
   const [show_preview, set_show_preview] = useState(true);
   const [is_fullscreen, set_is_fullscreen] = useState(false);
+  const [is_saving, set_is_saving] = useState(false);
 
   const preview_timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -75,6 +67,26 @@ export default function ClubInfoEdit() {
       if (preview_timer.current) clearTimeout(preview_timer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!clubId) return;
+    fetch_owner_club_detail(clubId).then((club) => {
+      if (!club) return;
+      set_club_name(club.name ?? "");
+      set_one_line(club.title ?? "");
+      set_president(club.presidentName ?? club.president ?? "");
+      set_contact(club.contact ?? "");
+      set_deadline(club.recruitDeadline ?? club.recruitingEnd ?? "");
+      const desc = club.description ?? "";
+      set_editor_html(desc);
+      set_preview_html(desc);
+      if (club.clubImages && club.clubImages.length > 0) {
+        set_display_images(club.clubImages.map((img) => ({ url: img.imageUrl, key: img.imageUrl })));
+      }
+    }).catch(() => {
+      alert("동아리 정보를 불러오는 데 실패했습니다.");
+    });
+  }, [clubId]);
 
   // 캐러셀 전체 이미지 목록 (기존 display + 새 파일 미리보기 URL)
   const all_image_urls = [
@@ -125,21 +137,29 @@ export default function ClubInfoEdit() {
     set_new_images((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const on_save = () => {
-    // TODO: API 연결 후 실제 저장 로직으로 교체
-    const intro_html = editorRef.current?.getInstance()?.getHTML() || "";
-    console.log("[ClubInfoEdit] mock save:", {
-      clubId,
-      club_name,
-      one_line,
-      president,
-      contact,
-      deadline,
-      description: intro_html,
-      display_images,
-      new_images,
-    });
-    alert("저장 완료 (API 미연결 — 콘솔 확인)");
+  const on_save = async () => {
+    if (!clubId) return;
+    set_is_saving(true);
+    try {
+      const new_file_names = await owner_upload_images(new_images);
+      const existing_keys = display_images.map((img) => img.key || img.url);
+      const description = editorRef.current?.getInstance()?.getHTML() || "";
+      await owner_update_club(clubId, {
+        name: club_name,
+        title: one_line,
+        presidentName: president,
+        contact,
+        recruitDeadline: deadline || null,
+        description,
+        uploadedImageFileNames: [...existing_keys, ...new_file_names],
+      });
+      set_new_images([]);
+      alert("저장 완료");
+    } catch {
+      alert("저장에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      set_is_saving(false);
+    }
   };
 
   const total_images = display_images.length + new_images.length;
@@ -167,8 +187,8 @@ export default function ClubInfoEdit() {
               </svg>
             </button>
             <h1>동아리 정보 수정</h1>
-            <button type="button" className="cie_save_btn" onClick={on_save}>
-              저장
+            <button type="button" className="cie_save_btn" onClick={on_save} disabled={is_saving}>
+              {is_saving ? "저장 중..." : "저장"}
             </button>
           </div>
         </div>
