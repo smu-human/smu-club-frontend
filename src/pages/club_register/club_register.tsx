@@ -145,8 +145,9 @@ export default function ClubRegister() {
 
       await owner_register_club({
         name: club_name,
+        title: club_one_line,
         presidentName: leader_name,
-        presidentPhone: phone,
+        contact: phone,
         recruitDeadline: deadline || null,
         description: description_html,
         type: "CENTRAL",
@@ -287,11 +288,12 @@ export default function ClubRegister() {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_leader_name(e.target.value)}
             />
 
-            <label className="cr_field_label" htmlFor="phone">연락처 (- 없이 숫자만 입력)</label>
+            <label className="cr_field_label" htmlFor="phone">인스타그램 계정</label>
             <input
               id="phone"
               className="cr_field_input"
-              type="tel"
+              type="text"
+              placeholder="@계정명"
               value={phone}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_phone(e.target.value)}
             />

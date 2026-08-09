@@ -476,6 +476,7 @@ export async function owner_register_club(payload: ClubPayload): Promise<ApiWrap
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: payload?.name ?? "",
+      title: payload?.title ?? "",
       presidentName: payload?.presidentName ?? "",
       contact: payload?.contact ?? "",
       recruitDeadline: payload?.recruitDeadline ?? null,
@@ -499,6 +500,7 @@ export async function owner_update_club(club_id: string | number, payload: ClubP
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: payload?.name ?? "",
+      title: payload?.title ?? "",
       presidentName: payload?.presidentName ?? "",
       contact: payload?.contact ?? "",
       recruitDeadline: payload?.recruitDeadline ?? null,
