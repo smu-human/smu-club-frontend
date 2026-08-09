@@ -119,7 +119,7 @@ export default function MyPage() {
 
   useEffect(() => {
     if (!is_logged_in()) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 

@@ -2,8 +2,6 @@ import { Link } from "react-router-dom";
 
 const routes = [
   { label: "Home", path: "/" },
-  { label: "Login", path: "/login" },
-  { label: "Signup", path: "/signup" },
   { label: "Club (id=1)", path: "/club/1" },
   { label: "MyPage", path: "/mypage" },
   { label: "Account Edit", path: "/account_edit" },

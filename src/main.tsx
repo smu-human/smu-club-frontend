@@ -13,13 +13,10 @@ function setup_session_expired_listener(): void {
   unsub = on_session_expired(() => {
     clear_tokens();
 
-    const next = `${window.location.pathname}${window.location.search || ""}`;
-    const q = encodeURIComponent(next && next !== "/login" ? next : "/");
-
     try {
-      router.navigate(`/login?next=${q}`);
+      router.navigate("/");
     } catch {
-      window.location.href = `/login?next=${q}`;
+      window.location.href = "/";
     }
   });
 }

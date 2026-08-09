@@ -85,7 +85,7 @@ export default function ApplyFormEdit() {
 
   useEffect(() => {
     if (!is_logged_in()) {
-      navigate("/login");
+      navigate("/");
       return;
     }
 

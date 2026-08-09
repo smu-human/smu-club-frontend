@@ -18,7 +18,7 @@ export default function AdminClubInfoEdit() {
   const [club_name, set_club_name] = useState("");
   const [club_one_line, set_club_one_line] = useState("");
   const [leader_name, set_leader_name] = useState("");
-  const [phone, set_phone] = useState("");
+  const [instagram, set_instagram] = useState("");
   const [deadline, set_deadline] = useState("");
   const [editor_html, set_editor_html] = useState("");
 
@@ -65,7 +65,7 @@ export default function AdminClubInfoEdit() {
         if (!d) return;
         set_club_name(d.name ?? "");
         set_leader_name(d.presidentName ?? "");
-        set_phone(d.presidentPhone ?? "");
+        set_instagram(d.contact ?? "");
         const dl = d.recruitDeadline ?? d.endDate ?? "";
         set_deadline(dl ? String(dl).slice(0, 10) : "");
         const desc = d.description ?? "";
@@ -161,7 +161,7 @@ export default function AdminClubInfoEdit() {
       await owner_update_club(clubId!, {
         name: club_name,
         presidentName: leader_name,
-        presidentPhone: phone,
+        contact: instagram,
         recruitDeadline: deadline || null,
         description: description_html,
         type: "CENTRAL",
@@ -307,13 +307,14 @@ export default function AdminClubInfoEdit() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_leader_name(e.target.value)}
               />
 
-              <label className="cr_field_label" htmlFor="acie_phone">연락처 (- 없이 숫자만 입력)</label>
+              <label className="cr_field_label" htmlFor="acie_instagram">인스타그램 (@계정명)</label>
               <input
-                id="acie_phone"
+                id="acie_instagram"
                 className="cr_field_input"
-                type="tel"
-                value={phone}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_phone(e.target.value)}
+                type="text"
+                placeholder="@계정명"
+                value={instagram}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_instagram(e.target.value)}
               />
 
               <label className="cr_field_label" htmlFor="acie_deadline">모집 마감일</label>

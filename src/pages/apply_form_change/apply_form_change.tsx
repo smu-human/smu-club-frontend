@@ -279,7 +279,7 @@ export default function ApplyFormChange() {
 
   useEffect(() => {
     if (!is_logged_in()) {
-      navigate("/login");
+      navigate("/");
       return;
     }
     load();

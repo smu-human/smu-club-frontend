@@ -8,7 +8,7 @@ import { apiLogin, is_logged_in } from "../../lib/api";
 export default function AdminLogin() {
   const navigate = useNavigate();
 
-  const [student_id, set_student_id] = useState("");
+  const [login_id, set_login_id] = useState("");
   const [password, set_password] = useState("");
   const [show_password, set_show_password] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
@@ -20,9 +20,9 @@ export default function AdminLogin() {
   }, []);
 
   useEffect(() => {
-    const saved_id = localStorage.getItem("smu_student_id");
+    const saved_id = localStorage.getItem("smu_login_id");
     if (saved_id) {
-      set_student_id(saved_id);
+      set_login_id(saved_id);
       set_remember_me(true);
     }
   }, []);
@@ -35,12 +35,12 @@ export default function AdminLogin() {
     set_is_loading(true);
 
     try {
-      await apiLogin({ studentId: student_id, password });
+      await apiLogin({ username: login_id, password });
 
       if (remember_me) {
-        localStorage.setItem("smu_student_id", student_id);
+        localStorage.setItem("smu_login_id", login_id);
       } else {
-        localStorage.removeItem("smu_student_id");
+        localStorage.removeItem("smu_login_id");
       }
 
       navigate("/admin/dashboard");
@@ -121,7 +121,7 @@ export default function AdminLogin() {
                 onSubmit={on_submit}
               >
                 <div className="form-group">
-                  <label htmlFor="studentId">아이디</label>
+                  <label htmlFor="loginId">아이디</label>
                   <div className="input-container">
                     <svg
                       className="input-icon"
@@ -134,12 +134,11 @@ export default function AdminLogin() {
                     </svg>
                     <input
                       type="text"
-                      id="studentId"
-                      placeholder="학번을 입력해주세요"
+                      id="loginId"
+                      placeholder="아이디를 입력해주세요"
                       required
-                      inputMode="numeric"
-                      value={student_id}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_student_id(e.target.value)}
+                      value={login_id}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_login_id(e.target.value)}
                     />
                   </div>
                 </div>
@@ -217,14 +216,6 @@ export default function AdminLogin() {
                   />
                 </button>
 
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-large"
-                  onClick={() => navigate("/admin/dashboard")}
-                  style={{ marginTop: 12 }}
-                >
-                  다음 (임시)
-                </button>
               </form>
             </div>
           </div>
