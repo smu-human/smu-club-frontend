@@ -9,16 +9,23 @@
   text-align: center;
   padding-top: 25px;
 }
+.hero-content {
+  width: 100%;
+  box-sizing: border-box;
+  padding-inline: clamp(16px, 8vw, 80px);
+}
 .hero-content h2 {
   font-size: 1.5rem;
   font-weight: bold;
 }
 .hero-logo {
-  width: 500px; /* 로고 크기 */
+  width: 100%;
+  max-width: 500px;
+  padding: 0;
+  margin: 20px auto 0;
   height: auto;
   display: block;
-  margin-bottom: 10px;
-  margin-top: 20px;
+  box-sizing: border-box;
 }
 .hero-content p {
   margin-top: 0;
