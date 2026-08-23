@@ -290,9 +290,13 @@
 }
 
 .cr_editor_col {
-  width: 320px;
   min-width: 0;
   overflow: hidden;
+}
+
+.cr_editor_col .toastui-editor .ProseMirror {
+  width: 320px;
+  margin: 0 auto;
 }
 
 .toastui-editor-defaultUI {
