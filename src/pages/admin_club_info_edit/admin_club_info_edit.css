@@ -332,7 +332,7 @@
   overflow: hidden;
 }
 
-.cr_preview_intro_card {
+.acie_intro_card {
   width: min(500px, 100%);
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -340,20 +340,22 @@
   padding: 12px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
   box-sizing: border-box;
+  margin-top: 0;
 }
 
-.cr_preview_section_title {
+.acie_section_title {
   font-size: 16px;
   font-weight: 800;
   margin: 0 0 8px;
 }
 
-.cr_preview_content {
+.acie_intro_card .desc.rich_desc {
   box-sizing: border-box;
 }
 
-.cr_preview_content img,
-.cr_preview_content table {
+.acie_intro_card .desc.rich_desc *,
+.acie_intro_card .desc.rich_desc img,
+.acie_intro_card .desc.rich_desc table {
   max-width: 320px;
   box-sizing: border-box;
 }

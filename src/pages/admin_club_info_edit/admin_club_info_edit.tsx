@@ -522,8 +522,8 @@ export default function AdminClubInfoEdit() {
 
               {show_live_preview && (
                 <div className="cr_preview_col">
-                  <section className="cr_preview_intro_card">
-                    <h2 className="cr_preview_section_title">동아리 소개</h2>
+                  <section className="acie_intro_card">
+                    <h2 className="acie_section_title">동아리 소개</h2>
                     <div
                       ref={previewContainerRef}
                       style={{
@@ -543,7 +543,7 @@ export default function AdminClubInfoEdit() {
                           transform: `scale(${previewScale})`,
                           transformOrigin: 'top center',
                         }}
-                        className="cr_preview_content toastui-editor-contents"
+                        className="desc rich_desc toastui-editor-contents"
                         dangerouslySetInnerHTML={{ __html: preview_html || "<p></p>" }}
                       />
                     </div>
