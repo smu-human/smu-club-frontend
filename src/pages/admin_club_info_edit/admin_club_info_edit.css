@@ -296,7 +296,8 @@
 
 .cr_editor_col .toastui-editor .ProseMirror {
   width: 320px;
-  margin: 0 auto;
+  margin: 0 auto !important;
+  padding: 12px !important;
   color: #374151;
   font-size: 14px;
   line-height: 1.6;
