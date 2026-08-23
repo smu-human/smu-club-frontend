@@ -290,6 +290,7 @@
 }
 
 .cr_editor_col {
+  width: 420px;
   min-width: 0;
   overflow: hidden;
 }
