@@ -13,17 +13,18 @@
   background: #fff;
   border-radius: 0 0 14px 14px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-  padding: 12px 24px;
+  padding: 4px 24px 12px;
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .adm-header-inner {
-  height: 56px;
+  margin-top: 12px;
+  height: 40px;
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 }
 
@@ -70,12 +71,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 4px 8px;
   background: #f3f4f6;
   color: #374151;
   border: none;
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: 50px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
@@ -463,7 +464,7 @@
 /* 반응형: 모바일 — 홈 화면과 동일한 헤더 레이아웃 */
 @media (max-width: 600px) {
   .adm-header {
-    padding: max(20px, env(safe-area-inset-top)) 12px 12px;
+    padding: max(0px, env(safe-area-inset-top)) 16px 0px;
   }
 
   /* 홈처럼: 로고 좌측 / 버튼 우측 (space-between) */
