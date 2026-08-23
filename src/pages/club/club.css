@@ -299,16 +299,14 @@ section.intro.card {
 }
 
 section.intro.card .desc.rich_desc {
-  width: 90%;
-  margin-inline: auto;
   box-sizing: border-box;
 }
 
-/* 내부 콘텐츠가 영역 밖으로 튀지 않게 */
+/* 내부 콘텐츠가 캔버스(500px) 밖으로 튀지 않게 */
 section.intro.card .desc.rich_desc *,
 section.intro.card .desc.rich_desc img,
 section.intro.card .desc.rich_desc table {
-  max-width: 100%;
+  max-width: 500px;
   box-sizing: border-box;
 }
 
@@ -329,7 +327,7 @@ section.intro.card .desc.rich_desc table {
 }
 
 .club_page--preview section.intro.card .desc.rich_desc {
-  width: 90%;
+  width: 100%;
 }
 
 .club_page--preview .card {

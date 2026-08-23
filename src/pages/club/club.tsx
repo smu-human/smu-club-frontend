@@ -12,6 +12,37 @@ import {
 } from "../../lib/api";
 import { Club } from "../../lib/types";
 
+const CANVAS_WIDTH = 500;
+const MIN_SCALE = 0.3;
+
+function useScaledCanvas() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return;
+
+    const update = () => {
+      const s = Math.min(1, Math.max(MIN_SCALE, container.offsetWidth / CANVAS_WIDTH));
+      setScale(s);
+      requestAnimationFrame(() => {
+        if (canvasRef.current) setHeight(canvasRef.current.scrollHeight * s);
+      });
+    };
+
+    const ro = new ResizeObserver(update);
+    ro.observe(container);
+    update();
+    return () => ro.disconnect();
+  }, []);
+
+  return { containerRef, canvasRef, scale, height };
+}
+
 function fmt_date(v: unknown): string {
   if (!v) return "-";
   const s = String(v);
@@ -34,6 +65,7 @@ export default function ClubPage() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const [owner_ids, set_owner_ids] = useState<Set<string>>(new Set<string>());
+  const { containerRef: descContainerRef, canvasRef: descCanvasRef, scale: descScale, height: descHeight } = useScaledCanvas();
 
   const is_owner = useMemo(() => owner_ids.has(String(id)), [owner_ids, id]);
 
@@ -280,9 +312,24 @@ export default function ClubPage() {
 
                 {club?.description ? (
                   <div
-                    className="desc rich_desc club_description"
-                    dangerouslySetInnerHTML={{ __html: club.description }}
-                  />
+                    ref={descContainerRef}
+                    style={{
+                      position: 'relative',
+                      overflow: descScale <= MIN_SCALE ? 'auto' : 'hidden',
+                      height: descHeight,
+                    }}
+                  >
+                    <div
+                      ref={descCanvasRef}
+                      style={{
+                        width: CANVAS_WIDTH,
+                        transform: `scale(${descScale})`,
+                        transformOrigin: 'top left',
+                      }}
+                      className="desc rich_desc club_description toastui-editor-contents"
+                      dangerouslySetInnerHTML={{ __html: club.description }}
+                    />
+                  </div>
                 ) : (
                   <p className="desc">
                     {`이곳에 클럽 ${id}의 소개글을 넣어주세요. 활동 목적, 주요 활동, 성과 등을 적을 수 있습니다.`}
