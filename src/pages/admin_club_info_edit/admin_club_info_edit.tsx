@@ -14,9 +14,23 @@ type ImageItem =
 function extract_object_key(v: unknown): string {
   const s = String(v || "").trim();
   if (!s.startsWith("http")) return s;
-  const idx = s.indexOf("/o/");
-  if (idx >= 0) return s.slice(idx + 3);
+  // Firebase Storage: /o/<key>
+  const firebase_idx = s.indexOf("/o/");
+  if (firebase_idx >= 0) return decodeURIComponent(s.slice(firebase_idx + 3).split("?")[0]);
+  // Supabase Storage: /storage/v1/object/public/<bucket>/<key>
+  const supabase_marker = "/object/public/";
+  const supabase_idx = s.indexOf(supabase_marker);
+  if (supabase_idx >= 0) {
+    const after_marker = s.slice(supabase_idx + supabase_marker.length);
+    const slash_idx = after_marker.indexOf("/");
+    if (slash_idx >= 0) return after_marker.slice(slash_idx + 1);
+  }
   return s;
+}
+
+function normalize_image_url(s: string): string {
+  const second = s.indexOf("https://", 1);
+  return second > 0 ? s.slice(second) : s;
 }
 
 export default function AdminClubInfoEdit() {
@@ -107,7 +121,7 @@ export default function AdminClubInfoEdit() {
           set_image_list(
             d.clubImages.map((img: { imageUrl: string }) => ({
               type: "existing" as const,
-              url: img.imageUrl,
+              url: normalize_image_url(img.imageUrl),
               key: extract_object_key(img.imageUrl),
             }))
           );
