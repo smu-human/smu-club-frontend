@@ -522,34 +522,32 @@ export default function AdminClubInfoEdit() {
 
               {show_live_preview && (
                 <div className="cr_preview_col">
-                  <div className="cr_phone_screen">
-                    <div className="cr_intro_card">
-                      <h2 className="cr_section_title">동아리 소개</h2>
+                  <section className="cr_preview_intro_card">
+                    <h2 className="cr_preview_section_title">동아리 소개</h2>
+                    <div
+                      ref={previewContainerRef}
+                      style={{
+                        position: 'relative',
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        overflow: previewScale <= MIN_SCALE ? 'auto' : 'hidden',
+                        height: previewHeight,
+                      }}
+                    >
                       <div
-                        ref={previewContainerRef}
+                        ref={previewCanvasRef}
                         style={{
-                          position: 'relative',
-                          width: '100%',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          overflow: previewScale <= MIN_SCALE ? 'auto' : 'hidden',
-                          height: previewHeight,
+                          width: CANVAS_WIDTH,
+                          flexShrink: 0,
+                          transform: `scale(${previewScale})`,
+                          transformOrigin: 'top center',
                         }}
-                      >
-                        <div
-                          ref={previewCanvasRef}
-                          style={{
-                            width: CANVAS_WIDTH,
-                            flexShrink: 0,
-                            transform: `scale(${previewScale})`,
-                            transformOrigin: 'top center',
-                          }}
-                          className="cr_preview_content toastui-editor-contents"
-                          dangerouslySetInnerHTML={{ __html: preview_html || "<p></p>" }}
-                        />
-                      </div>
+                        className="cr_preview_content toastui-editor-contents"
+                        dangerouslySetInnerHTML={{ __html: preview_html || "<p></p>" }}
+                      />
                     </div>
-                  </div>
+                  </section>
                 </div>
               )}
             </div>

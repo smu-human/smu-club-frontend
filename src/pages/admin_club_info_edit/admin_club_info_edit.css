@@ -332,44 +332,29 @@
   overflow: hidden;
 }
 
-.cr_phone_screen {
-  width: 100%;
-  height: auto;
-  overflow-x: hidden;
-  overflow-y: auto;
-  background: #e9efff;
-  padding: 12px;
-  box-sizing: border-box;
-}
-
-.cr_intro_card {
+.cr_preview_intro_card {
+  width: min(500px, 100%);
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 12px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
 }
 
-.cr_section_title {
+.cr_preview_section_title {
   font-size: 16px;
   font-weight: 800;
-  margin-bottom: 8px;
+  margin: 0 0 8px;
 }
 
 .cr_preview_content {
-  font-size: 14px;
-  line-height: 1.65;
-  color: #111827;
-  word-break: break-word;
-  white-space: normal;
-  width: 100%;
-  max-width: 100%;
-  margin-inline: auto;
+  box-sizing: border-box;
 }
 
 .cr_preview_content img,
 .cr_preview_content table {
-  max-width: 100%;
+  max-width: 320px;
   box-sizing: border-box;
 }
 
@@ -390,11 +375,6 @@
   align-items: start;
 }
 
-.cr_editor_fullscreen .cr_phone_screen {
-  height: auto;
-  max-height: calc(74vh + 8px);
-  overflow-y: auto;
-}
 
 /* 반응형 */
 @media (max-width: 900px) {
@@ -404,16 +384,6 @@
 
   .cr_editor_grid.with_preview {
     grid-template-columns: 1fr;
-  }
-
-  .cr_phone_screen {
-    height: auto;
-  }
-}
-
-@media (max-width: 600px) {
-  .cr_phone_screen {
-    height: 380px;
   }
 }
 
@@ -433,9 +403,5 @@
   .cr_img_thumb {
     width: 56px;
     height: 56px;
-  }
-
-  .cr_phone_screen {
-    height: 340px;
   }
 }
