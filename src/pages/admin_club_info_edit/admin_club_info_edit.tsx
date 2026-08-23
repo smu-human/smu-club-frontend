@@ -5,7 +5,7 @@ import "../../styles/globals.css";
 import "./admin_club_info_edit.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
-import { fetch_owner_club_detail, owner_update_club, owner_upload_images } from "../../lib/api";
+import { fetch_owner_club_detail, owner_register_club, owner_update_club, owner_upload_images } from "../../lib/api";
 
 export default function AdminClubInfoEdit() {
   const navigate = useNavigate();
@@ -27,6 +27,7 @@ export default function AdminClubInfoEdit() {
   const drag_idx = useRef<number | null>(null);
   const [over_idx, set_over_idx] = useState<number | null>(null);
 
+  const [is_new_club, set_is_new_club] = useState(false);
   const [is_saving, set_is_saving] = useState(false);
   const [preview_html, set_preview_html] = useState("");
   const [show_live_preview, set_show_live_preview] = useState(true);
@@ -62,7 +63,10 @@ export default function AdminClubInfoEdit() {
     if (!clubId) return;
     fetch_owner_club_detail(clubId)
       .then((d) => {
-        if (!d) return;
+        if (!d) {
+          set_is_new_club(true);
+          return;
+        }
         set_club_name(d.name ?? "");
         set_leader_name(d.presidentName ?? "");
         set_instagram(d.contact ?? "");
@@ -158,15 +162,23 @@ export default function AdminClubInfoEdit() {
 
       const description_html = editorRef.current?.getInstance().getHTML() || "";
 
-      await owner_update_club(clubId!, {
+      const payload = {
         name: club_name,
+        title: club_one_line,
         presidentName: leader_name,
         contact: instagram,
         recruitDeadline: deadline || null,
         description: description_html,
         type: "CENTRAL",
         uploadedImageFileNames,
-      });
+      };
+
+      if (is_new_club) {
+        await owner_register_club(payload);
+        set_is_new_club(false);
+      } else {
+        await owner_update_club(clubId!, payload);
+      }
 
       alert("저장되었습니다.");
       navigate("/admin/dashboard");
@@ -193,7 +205,7 @@ export default function AdminClubInfoEdit() {
                 <path d="M12 19l-7-7 7-7" />
               </svg>
             </button>
-            <h1>동아리 정보 수정</h1>
+            <h1>{is_new_club ? "동아리 정보 등록" : "동아리 정보 수정"}</h1>
           </div>
         </div>
       </div>

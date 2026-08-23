@@ -85,7 +85,10 @@ export default function HomePage() {
 
         setClubs(mapped.filter((c) => c.id != null));
       } catch (err) {
-        set_error_msg((err as Error & { code?: string }).message || "동아리 목록을 불러오지 못했습니다.");
+        set_error_msg(
+          (err as Error & { code?: string }).message ||
+            "동아리 목록을 불러오지 못했습니다.",
+        );
       } finally {
         set_is_loading(false);
       }
@@ -130,7 +133,7 @@ export default function HomePage() {
 
           <div className="header_actions">
             <Link to="/admin/login" className="btn primary">
-              관리자 로그인
+              동아리장 로그인
             </Link>
           </div>
         </div>
@@ -147,7 +150,9 @@ export default function HomePage() {
           </svg>
           <input
             value={query}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setQuery(e.target.value)
+            }
             className="search_input"
             placeholder="동아리 이름 검색"
           />
@@ -161,7 +166,9 @@ export default function HomePage() {
               <input
                 type="checkbox"
                 checked={onlyOpen}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOnlyOpen(e.target.checked)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setOnlyOpen(e.target.checked)
+                }
               />
               <span>신청가능</span>
             </label>
@@ -169,7 +176,9 @@ export default function HomePage() {
             <select
               className="sort_select"
               value={sortKey}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSortKey(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setSortKey(e.target.value)
+              }
             >
               <option value="name">이름순</option>
               <option value="dday">마감 임박순</option>

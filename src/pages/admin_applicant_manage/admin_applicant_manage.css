@@ -283,3 +283,34 @@
     flex: 1;
   }
 }
+
+/* 반응형: 소형 모바일 */
+@media (max-width: 480px) {
+  .adm-ap-header {
+    padding: 10px 12px;
+  }
+
+  .adm-ap-logo {
+    width: 150px;
+  }
+
+  .adm-ap-main {
+    padding: 0 12px 24px;
+  }
+
+  .adm-ap-toolbar {
+    padding: 12px 14px 6px;
+  }
+
+  .adm-ap-list {
+    padding: 8px 14px 16px;
+  }
+
+  .adm-ap-card {
+    padding: 13px 14px;
+  }
+
+  .adm-ap-section {
+    border-radius: 12px;
+  }
+}

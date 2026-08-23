@@ -49,7 +49,6 @@ export default function AdminDashboard() {
   today.setHours(0, 0, 0, 0);
 
   const [club_id, set_club_id] = useState<number | null>(null);
-  const [operator_name, set_operator_name] = useState("");
 const [club_status, set_club_status] = useState<string | null>(null);
   const [club_start_date, set_club_start_date] = useState<string | null>(null);
   const [club_end_date, set_club_end_date] = useState<string | null>(null);
@@ -67,7 +66,6 @@ const [club_status, set_club_status] = useState<string | null>(null);
         const cid = me?.operatorId;
         if (!cid) throw new Error("operatorId를 가져오지 못했습니다.");
         set_club_id(cid);
-        set_operator_name(me?.name || "");
 
         const club = await fetch_owner_club_detail(cid).catch(() => null);
 
@@ -126,16 +124,8 @@ const [club_status, set_club_status] = useState<string | null>(null);
         <div className="adm-header-inner">
           <div className="adm-header-brand">
             <img src="/images/2.png" alt="SMU Club 로고" className="adm-logo" />
-            {operator_name && <span className="adm-header-name">{operator_name}님</span>}
           </div>
           <div className="adm-header-actions">
-            <button type="button" className="adm-mypage-btn" onClick={() => navigate("/admin/mypage")}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              비밀번호 수정
-            </button>
             <button type="button" className="adm-logout-btn" onClick={on_logout}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -192,6 +182,15 @@ const [club_status, set_club_status] = useState<string | null>(null);
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">동아리 정보 수정</span>
                   <span className="adm-menu-item-desc">동아리 정보 및 상태를 변경합니다</span>
+                </div>
+                <svg className="adm-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </li>
+              <li className="adm-menu-item" onClick={() => navigate("/admin/mypage")}>
+                <div className="adm-menu-item-text">
+                  <span className="adm-menu-item-name">비밀번호 수정</span>
+                  <span className="adm-menu-item-desc">관리자 비밀번호를 변경합니다</span>
                 </div>
                 <svg className="adm-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <polyline points="9 18 15 12 9 6" />

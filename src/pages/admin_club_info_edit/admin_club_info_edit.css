@@ -413,3 +413,47 @@
     width: 80px;
   }
 }
+
+@media (max-width: 600px) {
+  .cr_phone_frame {
+    width: min(280px, calc(100vw - 80px));
+    border-radius: 24px;
+    border-width: 6px;
+  }
+
+  .cr_phone_screen {
+    height: 380px;
+  }
+
+  .cr_phone_notch {
+    width: 70px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cr_main {
+    padding: 20px 12px 32px;
+  }
+
+  .cr_save_btn {
+    margin-top: 24px;
+  }
+
+  .cr_card {
+    padding: 12px;
+  }
+
+  .cr_img_thumb {
+    width: 56px;
+    height: 56px;
+  }
+
+  .cr_phone_frame {
+    width: min(240px, calc(100vw - 64px));
+  }
+
+  .cr_phone_screen {
+    height: 340px;
+  }
+}
