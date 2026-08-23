@@ -181,6 +181,28 @@ export default function AdminDashboard() {
             <ul className="adm-menu-list">
               <li
                 className="adm-menu-item"
+                onClick={() => navigate("/")}
+              >
+                <div className="adm-menu-item-text">
+                  <span className="adm-menu-item-name">홈</span>
+                  <span className="adm-menu-item-desc">
+                    홈 화면으로 이동합니다
+                  </span>
+                </div>
+                <svg
+                  className="adm-chevron"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </li>
+              <li
+                className="adm-menu-item"
                 onClick={() => club_id && navigate(`/club/${club_id}`)}
               >
                 <div className="adm-menu-item-text">
