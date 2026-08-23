@@ -294,6 +294,10 @@
   overflow: hidden;
 }
 
+.cr_editor_col .toastui-editor-ww-container .toastui-editor-contents {
+  padding: 0 !important;
+}
+
 .cr_editor_col .toastui-editor .ProseMirror {
   width: 320px;
   margin: 0 auto !important;
