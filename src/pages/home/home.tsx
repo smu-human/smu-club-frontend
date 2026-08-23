@@ -34,7 +34,10 @@ function normalize_img_url(url: unknown): string | null {
   if (!s) return null;
   if (s === "string") return null;
 
-  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  if (s.startsWith("http://") || s.startsWith("https://")) {
+    const second = s.indexOf("https://", 1);
+    return second > 0 ? s.slice(second) : s;
+  }
   if (s.startsWith("/")) return s;
 
   if (THUMB_BASE_URL) {
