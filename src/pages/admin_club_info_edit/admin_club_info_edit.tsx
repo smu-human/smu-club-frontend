@@ -11,6 +11,37 @@ type ImageItem =
   | { type: "existing"; url: string; key: string }
   | { type: "new"; file: File; preview_url: string };
 
+const CANVAS_WIDTH = 320;
+const MIN_SCALE = 0.3;
+
+function useScaledCanvas() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return;
+
+    const update = () => {
+      const s = Math.min(1, Math.max(MIN_SCALE, container.offsetWidth / CANVAS_WIDTH));
+      setScale(s);
+      requestAnimationFrame(() => {
+        if (canvasRef.current) setHeight(canvasRef.current.scrollHeight * s);
+      });
+    };
+
+    const ro = new ResizeObserver(update);
+    ro.observe(container);
+    update();
+    return () => ro.disconnect();
+  }, []);
+
+  return { containerRef, canvasRef, scale, height };
+}
+
 function extract_object_key(v: unknown): string {
   const s = String(v || "").trim();
   if (!s.startsWith("http")) return s;
@@ -38,6 +69,7 @@ export default function AdminClubInfoEdit() {
   const { clubId } = useParams<{ clubId: string }>();
   const editorRef = useRef<{ getInstance(): { getHTML(): string } } | null>(null);
   const scroll_ref = useRef<HTMLDivElement | null>(null);
+  const { containerRef: previewContainerRef, canvasRef: previewCanvasRef, scale: previewScale, height: previewHeight } = useScaledCanvas();
 
   const today_str = new Date().toISOString().slice(0, 10);
 
@@ -494,9 +526,28 @@ export default function AdminClubInfoEdit() {
                     <div className="cr_intro_card">
                       <h2 className="cr_section_title">동아리 소개</h2>
                       <div
-                        className="cr_preview_content toastui-editor-contents"
-                        dangerouslySetInnerHTML={{ __html: preview_html || "<p></p>" }}
-                      />
+                        ref={previewContainerRef}
+                        style={{
+                          position: 'relative',
+                          width: '100%',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          overflow: previewScale <= MIN_SCALE ? 'auto' : 'hidden',
+                          height: previewHeight,
+                        }}
+                      >
+                        <div
+                          ref={previewCanvasRef}
+                          style={{
+                            width: CANVAS_WIDTH,
+                            flexShrink: 0,
+                            transform: `scale(${previewScale})`,
+                            transformOrigin: 'top center',
+                          }}
+                          className="cr_preview_content toastui-editor-contents"
+                          dangerouslySetInnerHTML={{ __html: preview_html || "<p></p>" }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
