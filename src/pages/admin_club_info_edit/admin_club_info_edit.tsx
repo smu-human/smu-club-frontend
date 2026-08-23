@@ -425,7 +425,7 @@ export default function AdminClubInfoEdit() {
               is_editor_fullscreen ? "cr_editor_fullscreen" : "",
             ].join(" ")}
           >
-            <div className="cr_editor_topbar">
+            {/* <div className="cr_editor_topbar">
               <button
                 type="button"
                 className="cr_mini_btn"
@@ -435,7 +435,7 @@ export default function AdminClubInfoEdit() {
               >
                 {is_editor_fullscreen ? "전체화면 닫기 (ESC)" : "전체화면"}
               </button>
-            </div>
+            </div> */}
 
             <div className="cr_editor_col">
               <Editor
