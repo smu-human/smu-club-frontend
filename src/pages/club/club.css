@@ -294,7 +294,7 @@ body {
 
 /* 카드 자체는 반응형 */
 section.intro.card {
-  width: min(342px, 100%);
+  width: min(500px, 100%);
   box-sizing: border-box;
 }
 
@@ -306,7 +306,7 @@ section.intro.card .desc.rich_desc {
 section.intro.card .desc.rich_desc *,
 section.intro.card .desc.rich_desc img,
 section.intro.card .desc.rich_desc table {
-  max-width: 500px;
+  max-width: 342px;
   box-sizing: border-box;
 }
 
