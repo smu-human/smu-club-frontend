@@ -315,6 +315,7 @@ export default function ClubPage() {
                     ref={descContainerRef}
                     style={{
                       position: 'relative',
+                      width: '100%',
                       overflow: descScale <= MIN_SCALE ? 'auto' : 'hidden',
                       height: descHeight,
                     }}
