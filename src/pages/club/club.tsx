@@ -12,7 +12,7 @@ import {
 } from "../../lib/api";
 import { Club } from "../../lib/types";
 
-const CANVAS_WIDTH = 350;
+const CANVAS_WIDTH = 500;
 const MIN_SCALE = 0.3;
 
 function useScaledCanvas() {

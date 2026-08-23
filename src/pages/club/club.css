@@ -306,7 +306,7 @@ section.intro.card .desc.rich_desc {
 section.intro.card .desc.rich_desc *,
 section.intro.card .desc.rich_desc img,
 section.intro.card .desc.rich_desc table {
-  max-width: 350px;
+  max-width: 500px;
   box-sizing: border-box;
 }
 
