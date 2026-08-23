@@ -86,7 +86,7 @@ export default function AdminLogin() {
               <path d="M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1>관리자 로그인</h1>
+          <h1>동아리장 로그인</h1>
         </div>
       </div>
 
@@ -138,7 +138,9 @@ export default function AdminLogin() {
                       placeholder="아이디를 입력해주세요"
                       required
                       value={login_id}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_login_id(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        set_login_id(e.target.value)
+                      }
                     />
                   </div>
                 </div>
@@ -162,7 +164,9 @@ export default function AdminLogin() {
                       placeholder="비밀번호를 입력하세요"
                       required
                       value={password}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_password(e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        set_password(e.target.value)
+                      }
                     />
                     <button
                       type="button"
@@ -188,7 +192,9 @@ export default function AdminLogin() {
                     <input
                       type="checkbox"
                       checked={remember_me}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_remember_me(e.target.checked)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        set_remember_me(e.target.checked)
+                      }
                     />
                     <span className="checkmark"></span>
                     로그인 상태 유지
@@ -215,7 +221,6 @@ export default function AdminLogin() {
                     style={{ display: is_loading ? "inline-block" : "none" }}
                   />
                 </button>
-
               </form>
             </div>
           </div>

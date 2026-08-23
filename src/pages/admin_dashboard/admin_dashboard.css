@@ -17,7 +17,6 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  margin-bottom: 30px;
 }
 
 .adm-header-inner {
@@ -461,8 +460,27 @@
   }
 }
 
-/* 반응형: 모바일 */
+/* 반응형: 모바일 — 홈 화면과 동일한 헤더 레이아웃 */
 @media (max-width: 600px) {
+  .adm-header {
+    padding: max(20px, env(safe-area-inset-top)) 12px 12px;
+  }
+
+  /* 홈처럼: 로고 좌측 / 버튼 우측 (space-between) */
+  .adm-header-inner {
+    justify-content: space-between;
+  }
+
+  .adm-header-actions {
+    position: static;
+  }
+
+  /* 홈의 logo_img와 동일: 높이 기준, 너비 자동 */
+  .adm-logo {
+    width: auto;
+    height: 25px;
+  }
+
   .adm-main {
     padding: 16px 16px 32px;
   }
@@ -470,19 +488,58 @@
   .adm-body-grid {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
+    gap: 20px;
+  }
+
+  .adm-panel {
+    min-height: 0;
+    padding: 16px;
   }
 
   .adm-panel-preview {
     grid-column: auto;
     grid-row: auto;
-    min-height: 320px;
+    min-height: 280px;
   }
 
   .adm-preview-iframe {
-    min-height: 260px;
+    min-height: 240px;
   }
 
-  .adm-logo {
-    width: 260px;
+  .adm-menu-item-name {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .adm-menu-item-desc {
+    font-size: 13px;
+  }
+}
+
+/* 반응형: 소형 모바일 */
+@media (max-width: 480px) {
+  .adm-main {
+    padding: 12px 12px 28px;
+  }
+
+  .adm-body-grid {
+    gap: 14px;
+  }
+
+  .adm-panel {
+    padding: 14px;
+  }
+
+  .adm-menu-item-name {
+    font-size: 15px;
+  }
+
+  .adm-recruit-state {
+    font-size: 16px;
+  }
+
+  .adm-dday-count,
+  .adm-applicant-count-num {
+    font-size: 18px;
   }
 }

@@ -72,6 +72,7 @@ export function clear_tokens(): void {
 }
 
 export function is_logged_in(): boolean {
+  if (import.meta.env.VITE_MOCK_AUTH === "true") return true;
   return !!get_access_token();
 }
 
@@ -163,6 +164,10 @@ async function do_reissue(prev_access_token: string | null): Promise<{ access_to
 
 // ===== fetch 래퍼 =====
 export async function apiFetch(path: string | URL, init: RequestInit = {}): Promise<Response> {
+  if (import.meta.env.VITE_MOCK_AUTH === "true") {
+    const { mock_apiFetch } = await import("./dev_mock");
+    return mock_apiFetch(path, init);
+  }
   let access_token = get_access_token();
   const doFetch = () => fetch(resolve_url(path), make_init(init, access_token));
 

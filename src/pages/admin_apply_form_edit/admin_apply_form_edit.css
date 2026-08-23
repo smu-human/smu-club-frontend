@@ -284,3 +284,17 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .afe_main {
+    padding: 20px 12px 32px;
+  }
+
+  .afe_save_btn {
+    margin-top: 24px;
+  }
+
+  .afe_card {
+    padding: 12px;
+  }
+}
