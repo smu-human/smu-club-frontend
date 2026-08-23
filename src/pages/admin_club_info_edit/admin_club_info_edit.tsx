@@ -53,6 +53,7 @@ export default function AdminClubInfoEdit() {
   const prev_image_list_ref = useRef<ImageItem[]>([]);
   const drag_idx = useRef<number | null>(null);
   const [over_idx, set_over_idx] = useState<number | null>(null);
+  const img_row_refs = useRef<(HTMLDivElement | null)[]>([]);
 
   const [is_new_club, set_is_new_club] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
@@ -199,6 +200,35 @@ export default function AdminClubInfoEdit() {
     });
   };
 
+  const get_touch_over_idx = (touch: React.Touch): number | null => {
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!el) return null;
+    const idx = img_row_refs.current.findIndex(
+      (ref) => ref && (ref === el || ref.contains(el as Node))
+    );
+    return idx >= 0 ? idx : null;
+  };
+
+  const on_touch_start = (idx: number) => {
+    drag_idx.current = idx;
+    set_over_idx(null);
+  };
+
+  const on_touch_move = (e: React.TouchEvent) => {
+    e.preventDefault();
+    const over = get_touch_over_idx(e.touches[0]);
+    set_over_idx(over);
+  };
+
+  const on_touch_end = (e: React.TouchEvent) => {
+    const over = get_touch_over_idx(e.changedTouches[0]);
+    if (drag_idx.current !== null && over !== null) {
+      reorder_images(drag_idx.current, over);
+    }
+    drag_idx.current = null;
+    set_over_idx(null);
+  };
+
   const reorder_images = (from: number, to: number) => {
     if (from === to) return;
     set_image_list((prev) => {
@@ -303,6 +333,7 @@ export default function AdminClubInfoEdit() {
                     return (
                       <div
                         key={url}
+                        ref={(el) => { img_row_refs.current[idx] = el; }}
                         className={`cr_img_row${over_idx === idx ? " cr_img_row--over" : ""}${drag_idx.current === idx ? " cr_img_row--dragging" : ""}`}
                         draggable
                         onDragStart={() => { drag_idx.current = idx; set_over_idx(null); }}
@@ -314,6 +345,9 @@ export default function AdminClubInfoEdit() {
                           drag_idx.current = null;
                           set_over_idx(null);
                         }}
+                        onTouchStart={() => on_touch_start(idx)}
+                        onTouchMove={on_touch_move}
+                        onTouchEnd={on_touch_end}
                       >
                         <img src={url} alt={`갤러리 ${idx + 1}`} className="cr_img_thumb" />
                         <span className="cr_img_label">이미지 {idx + 1}</span>
