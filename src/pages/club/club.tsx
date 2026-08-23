@@ -85,6 +85,11 @@ export default function ClubPage() {
           ? club_data.clubImages
           : [];
 
+        const normalize_url = (s: string) => {
+          const second = s.indexOf("https://", 1);
+          return second > 0 ? s.slice(second) : s;
+        };
+
         const urls_from_club_images = (club_images as unknown[])
           .slice()
           .sort((a, b) => {
@@ -94,13 +99,13 @@ export default function ClubPage() {
           })
           .map((it) => (it as Record<string, unknown>)?.imageUrl)
           .filter((v) => v && String(v).trim() && v !== "string")
-          .map(String);
+          .map((v) => normalize_url(String(v)));
 
         const thumb =
           club_data?.thumbnailUrl &&
           String(club_data.thumbnailUrl).trim() &&
           club_data.thumbnailUrl !== "string"
-            ? club_data.thumbnailUrl
+            ? normalize_url(String(club_data.thumbnailUrl))
             : null;
 
         const final_urls: string[] =
