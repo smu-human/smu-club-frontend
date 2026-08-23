@@ -304,55 +304,44 @@
 .toastui-editor-contents *,
 .toastui-editor-md-preview,
 .toastui-editor-md-preview * {
-  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif !important;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Apple SD Gothic Neo",
+    "Noto Sans KR",
+    sans-serif !important;
 }
 
-/* 프리뷰 폰 프레임 */
+/* 프리뷰 */
 .cr_preview_col {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
   flex-shrink: 0;
-}
-
-.cr_preview_title {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
-  text-align: center;
-}
-
-.cr_phone_wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.cr_phone_frame {
-  width: 390px;
-  border: 8px solid #1f2937;
-  border-radius: 36px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  overflow: hidden;
-  background: #fff;
-  position: relative;
-}
-
-.cr_phone_notch {
-  width: 100px;
-  height: 24px;
-  background: #1f2937;
-  border-radius: 0 0 16px 16px;
-  margin: 0 auto;
 }
 
 .cr_phone_screen {
   width: 100%;
   height: 560px;
   overflow-y: auto;
-  background: #fff;
-  padding: 8px 16px 16px;
+  background: #e9efff;
+  padding: 12px;
   box-sizing: border-box;
+}
+
+.cr_intro_card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.cr_section_title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
 
 .cr_preview_content {
@@ -361,6 +350,9 @@
   color: #111827;
   word-break: break-word;
   white-space: normal;
+  width: 342px;
+  max-width: 100%;
+  margin-inline: auto;
 }
 
 .cr_preview_content img,
@@ -400,34 +392,14 @@
     grid-template-columns: 1fr;
   }
 
-  .cr_phone_frame {
-    width: 320px;
-    border-radius: 28px;
-  }
-
   .cr_phone_screen {
     height: 440px;
-  }
-
-  .cr_phone_notch {
-    width: 80px;
   }
 }
 
 @media (max-width: 600px) {
-  .cr_phone_frame {
-    width: min(280px, calc(100vw - 80px));
-    border-radius: 24px;
-    border-width: 6px;
-  }
-
   .cr_phone_screen {
     height: 380px;
-  }
-
-  .cr_phone_notch {
-    width: 70px;
-    height: 20px;
   }
 }
 
@@ -447,10 +419,6 @@
   .cr_img_thumb {
     width: 56px;
     height: 56px;
-  }
-
-  .cr_phone_frame {
-    width: min(240px, calc(100vw - 64px));
   }
 
   .cr_phone_screen {

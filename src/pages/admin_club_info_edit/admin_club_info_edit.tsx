@@ -7,6 +7,18 @@ import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { fetch_owner_club_detail, owner_register_club, owner_update_club, owner_upload_images } from "../../lib/api";
 
+type ImageItem =
+  | { type: "existing"; url: string; key: string }
+  | { type: "new"; file: File; preview_url: string };
+
+function extract_object_key(v: unknown): string {
+  const s = String(v || "").trim();
+  if (!s.startsWith("http")) return s;
+  const idx = s.indexOf("/o/");
+  if (idx >= 0) return s.slice(idx + 3);
+  return s;
+}
+
 export default function AdminClubInfoEdit() {
   const navigate = useNavigate();
   const { clubId } = useParams<{ clubId: string }>();
@@ -22,8 +34,9 @@ export default function AdminClubInfoEdit() {
   const [deadline, set_deadline] = useState("");
   const [editor_html, set_editor_html] = useState("");
 
-  const [images, set_images] = useState<File[]>([]); // File[]
-  const [thumb_urls, set_thumb_urls] = useState<string[]>([]); // ObjectURL[]
+  const [image_list, set_image_list] = useState<ImageItem[]>([]);
+  const image_list_ref = useRef<ImageItem[]>([]);
+  const prev_image_list_ref = useRef<ImageItem[]>([]);
   const drag_idx = useRef<number | null>(null);
   const [over_idx, set_over_idx] = useState<number | null>(null);
 
@@ -74,8 +87,7 @@ export default function AdminClubInfoEdit() {
     set_deadline("");
     set_editor_html("");
     set_preview_html("");
-    set_images([]);
-    set_thumb_urls([]);
+    set_image_list([]);
     fetch_owner_club_detail(clubId)
       .then((d) => {
         if (cancelled) return;
@@ -91,6 +103,15 @@ export default function AdminClubInfoEdit() {
         set_deadline(dl ? String(dl).slice(0, 10) : "");
         const desc = d.description ?? "";
         set_editor_html(desc);
+        if (d.clubImages && d.clubImages.length > 0) {
+          set_image_list(
+            d.clubImages.map((img: { imageUrl: string }) => ({
+              type: "existing" as const,
+              url: img.imageUrl,
+              key: extract_object_key(img.imageUrl),
+            }))
+          );
+        }
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -130,12 +151,31 @@ export default function AdminClubInfoEdit() {
     return () => window.removeEventListener("keydown", on_key);
   }, []);
 
-  // ObjectURL 정리
+  // 리스트 변경 시 제거된 new 이미지 URL만 revoke
+  useEffect(() => {
+    const prev = prev_image_list_ref.current;
+    const current_urls = new Set(
+      image_list
+        .filter((item): item is Extract<ImageItem, { type: "new" }> => item.type === "new")
+        .map((item) => item.preview_url)
+    );
+    prev.forEach((item) => {
+      if (item.type === "new" && !current_urls.has(item.preview_url)) {
+        URL.revokeObjectURL(item.preview_url);
+      }
+    });
+    prev_image_list_ref.current = image_list;
+    image_list_ref.current = image_list;
+  }, [image_list]);
+
+  // 언마운트 시 남아있는 new 이미지 URL 전체 revoke
   useEffect(() => {
     return () => {
-      thumb_urls.forEach((url) => URL.revokeObjectURL(url));
+      image_list_ref.current.forEach((item) => {
+        if (item.type === "new") URL.revokeObjectURL(item.preview_url);
+      });
     };
-  }, [thumb_urls]);
+  }, []);
 
   const sync_preview_from_editor = () => {
     if (preview_timer_ref.current) clearTimeout(preview_timer_ref.current);
@@ -147,35 +187,37 @@ export default function AdminClubInfoEdit() {
 
   const on_pick_images = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const total = images.length + files.length;
+    const remaining = Math.max(0, 5 - image_list.length);
     let picked = files;
-    if (total > 5) {
-      const remaining = Math.max(0, 5 - images.length);
-      alert(`이미지는 최대 5장까지 등록할 수 있습니다. ${remaining}장만 추가됩니다.`);
+    if (files.length > remaining) {
+      alert(`이미지는 최대 ${remaining}장까지 추가할 수 있습니다.`);
       picked = files.slice(0, remaining);
     }
-    const new_urls = picked.map((f) => URL.createObjectURL(f));
-    set_images((prev) => [...prev, ...picked]);
-    set_thumb_urls((prev) => [...prev, ...new_urls]);
+    const new_items: ImageItem[] = picked.map((f) => ({
+      type: "new" as const,
+      file: f,
+      preview_url: URL.createObjectURL(f),
+    }));
+    set_image_list((prev) => [...prev, ...new_items]);
     e.target.value = "";
   };
 
   const remove_image = (idx: number) => {
-    URL.revokeObjectURL(thumb_urls[idx]);
-    set_images((prev) => prev.filter((_, i) => i !== idx));
-    set_thumb_urls((prev) => prev.filter((_, i) => i !== idx));
+    set_image_list((prev) => {
+      const item = prev[idx];
+      if (item.type === "new") URL.revokeObjectURL(item.preview_url);
+      return prev.filter((_, i) => i !== idx);
+    });
   };
 
   const reorder_images = (from: number, to: number) => {
     if (from === to) return;
-    const reorder = <T,>(arr: T[]): T[] => {
-      const next = [...arr];
+    set_image_list((prev) => {
+      const next = [...prev];
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
       return next;
-    };
-    set_images((prev) => reorder(prev));
-    set_thumb_urls((prev) => reorder(prev));
+    });
   };
 
   const on_save = async () => {
@@ -184,16 +226,22 @@ export default function AdminClubInfoEdit() {
       alert("동아리 정보를 불러오지 못했습니다. 페이지를 새로고침해주세요.");
       return;
     }
-    if (!deadline) {
-      alert("모집 마감일을 설정해주세요.");
-      return;
-    }
+    // if (!deadline) {
+    //   alert("모집 마감일을 설정해주세요.");
+    //   return;
+    // }
     set_is_saving(true);
     try {
-      let uploadedImageFileNames: string[] = [];
-      if (images.length > 0) {
-        uploadedImageFileNames = await owner_upload_images(images);
-      }
+      const new_files = image_list
+        .filter((item): item is Extract<ImageItem, { type: "new" }> => item.type === "new")
+        .map((item) => item.file);
+      const new_file_names = new_files.length > 0 ? await owner_upload_images(new_files) : [];
+
+      let new_name_idx = 0;
+      const uploadedImageFileNames = image_list.map((item) => {
+        if (item.type === "existing") return item.key;
+        return new_file_names[new_name_idx++];
+      });
 
       const description_html = editorRef.current?.getInstance().getHTML() || "";
 
@@ -259,42 +307,43 @@ export default function AdminClubInfoEdit() {
                 <span className="cr_hint_drag">드래그로 순서 변경</span>
               </p>
 
-              {thumb_urls.length > 0 && (
+              {image_list.length > 0 && (
                 <div className="cr_img_list">
-                  {thumb_urls.map((url, idx) => (
-                    <div
-                      key={url}
-                      className={`cr_img_row${over_idx === idx ? " cr_img_row--over" : ""}${drag_idx.current === idx ? " cr_img_row--dragging" : ""}`}
-                      draggable
-                      onDragStart={() => { drag_idx.current = idx; set_over_idx(null); }}
-                      onDragEnd={() => { drag_idx.current = null; set_over_idx(null); }}
-                      onDragOver={(e) => { e.preventDefault(); set_over_idx(idx); }}
-                      onDragLeave={() => set_over_idx(null)}
-                      onDrop={() => {
-                        if (drag_idx.current !== null) {
-                          reorder_images(drag_idx.current, idx);
-                        }
-                        drag_idx.current = null;
-                        set_over_idx(null);
-                      }}
-                    >
-                      <img src={url} alt={`갤러리 ${idx + 1}`} className="cr_img_thumb" />
-                      <span className="cr_img_label">이미지 {idx + 1}</span>
-                      <button
-                        type="button"
-                        className="cr_img_remove"
-                        onClick={() => remove_image(idx)}
-                        aria-label="이미지 삭제"
-                      >×</button>
-                      <div className="cr_img_handle" aria-label="순서 변경">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="4" y1="6" x2="20" y2="6" />
-                          <line x1="4" y1="12" x2="20" y2="12" />
-                          <line x1="4" y1="18" x2="20" y2="18" />
-                        </svg>
+                  {image_list.map((item, idx) => {
+                    const url = item.type === "existing" ? item.url : item.preview_url;
+                    return (
+                      <div
+                        key={url}
+                        className={`cr_img_row${over_idx === idx ? " cr_img_row--over" : ""}${drag_idx.current === idx ? " cr_img_row--dragging" : ""}`}
+                        draggable
+                        onDragStart={() => { drag_idx.current = idx; set_over_idx(null); }}
+                        onDragEnd={() => { drag_idx.current = null; set_over_idx(null); }}
+                        onDragOver={(e) => { e.preventDefault(); set_over_idx(idx); }}
+                        onDragLeave={() => set_over_idx(null)}
+                        onDrop={() => {
+                          if (drag_idx.current !== null) reorder_images(drag_idx.current, idx);
+                          drag_idx.current = null;
+                          set_over_idx(null);
+                        }}
+                      >
+                        <img src={url} alt={`갤러리 ${idx + 1}`} className="cr_img_thumb" />
+                        <span className="cr_img_label">이미지 {idx + 1}</span>
+                        <button
+                          type="button"
+                          className="cr_img_remove"
+                          onClick={() => remove_image(idx)}
+                          aria-label="이미지 삭제"
+                        >×</button>
+                        <div className="cr_img_handle" aria-label="순서 변경">
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="4" y1="6" x2="20" y2="6" />
+                            <line x1="4" y1="12" x2="20" y2="12" />
+                            <line x1="4" y1="18" x2="20" y2="18" />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -303,8 +352,8 @@ export default function AdminClubInfoEdit() {
                   className="cr_outline_btn"
                   htmlFor="acie_gallery"
                   style={{
-                    opacity: images.length >= 5 ? 0.5 : 1,
-                    pointerEvents: images.length >= 5 ? "none" : "auto",
+                    opacity: image_list.length >= 5 ? 0.5 : 1,
+                    pointerEvents: image_list.length >= 5 ? "none" : "auto",
                   }}
                 >
                   이미지 추가
@@ -315,10 +364,10 @@ export default function AdminClubInfoEdit() {
                   accept="image/png, image/jpeg"
                   multiple
                   onChange={on_pick_images}
-                  disabled={images.length >= 5}
+                  disabled={image_list.length >= 5}
                   style={{ display: "none" }}
                 />
-                <p className="cr_hint_text">{`선택: ${images.length}개 / 최대 5개`}</p>
+                <p className="cr_hint_text">{`${image_list.length}개 / 최대 5개`}</p>
               </div>
             </div>
           </section>
@@ -364,7 +413,7 @@ export default function AdminClubInfoEdit() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_instagram(e.target.value)}
               />
 
-              <label className="cr_field_label" htmlFor="acie_deadline">모집 마감일</label>
+              {/* <label className="cr_field_label" htmlFor="acie_deadline">모집 마감일</label>
               <input
                 id="acie_deadline"
                 className="cr_field_input"
@@ -372,7 +421,7 @@ export default function AdminClubInfoEdit() {
                 value={deadline}
                 min={today_str}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_deadline(e.target.value)}
-              />
+              /> */}
             </div>
           </section>
         </div>
@@ -427,16 +476,13 @@ export default function AdminClubInfoEdit() {
 
               {show_live_preview && (
                 <div className="cr_preview_col">
-                  <div className="cr_preview_title">실제 화면 미리보기 (390px)</div>
-                  <div className="cr_phone_wrapper">
-                    <div className="cr_phone_frame">
-                      <div className="cr_phone_notch" />
-                      <div className="cr_phone_screen">
-                        <div
-                          className="cr_preview_content toastui-editor-contents"
-                          dangerouslySetInnerHTML={{ __html: preview_html || "<p></p>" }}
-                        />
-                      </div>
+                  <div className="cr_phone_screen">
+                    <div className="cr_intro_card">
+                      <h2 className="cr_section_title">동아리 소개</h2>
+                      <div
+                        className="cr_preview_content toastui-editor-contents"
+                        dangerouslySetInnerHTML={{ __html: preview_html || "<p></p>" }}
+                      />
                     </div>
                   </div>
                 </div>
