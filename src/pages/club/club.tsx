@@ -326,6 +326,7 @@ export default function ClubPage() {
                       ref={descCanvasRef}
                       style={{
                         width: CANVAS_WIDTH,
+                        flexShrink: 0,
                         transform: `scale(${descScale})`,
                         transformOrigin: 'top center',
                       }}
