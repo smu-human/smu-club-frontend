@@ -53,8 +53,25 @@ function pick_thumbnail(item: ClubListItem): string | null {
 export default function HomePage() {
   const nav = useNavigate();
   const [query, setQuery] = useState("");
-  const [sortKey, setSortKey] = useState<string>("name");
+  const [sortKey, setSortKey] = useState<string>("default");
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [sort_open, set_sort_open] = useState(false);
+  const sort_ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (sort_ref.current && !sort_ref.current.contains(e.target as Node)) {
+        set_sort_open(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const SORT_OPTIONS = [
+    { value: "default", label: "기본순" },
+    { value: "name", label: "이름순" },
+  ];
 
   const [clubs, setClubs] = useState<ClubItem[]>([]);
   const [is_loading, set_is_loading] = useState(false);
@@ -102,18 +119,20 @@ export default function HomePage() {
 
     if (query.trim()) {
       const q = query.trim().toLowerCase();
-      list = list.filter((c) => (c.name || "").toLowerCase().includes(q));
+      list = list.filter(
+        (c) =>
+          (c.name || "").toLowerCase().includes(q) ||
+          (c.desc || "").toLowerCase().includes(q),
+      );
     }
     if (onlyOpen) {
       list = list.filter((c) => c.status === "open");
     }
 
-    list.sort((a, b) => {
-      if (sortKey === "name") return (a.name || "").localeCompare(b.name || "");
-      if (sortKey === "members") return (b.members ?? 0) - (a.members ?? 0);
-      if (sortKey === "dday") return (a.dday ?? 9999) - (b.dday ?? 9999);
-      return 0;
-    });
+    if (sortKey === "name") {
+      list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    }
+    // "default": API 응답 순서 유지 (정렬 없음)
 
     return list;
   }, [query, onlyOpen, sortKey, clubs]);
@@ -154,7 +173,7 @@ export default function HomePage() {
               setQuery(e.target.value)
             }
             className="search_input"
-            placeholder="동아리 이름 검색"
+            placeholder="통합 검색"
           />
         </div>
 
@@ -162,7 +181,7 @@ export default function HomePage() {
           <div className="stat">총 {clubs.length}개의 동아리</div>
 
           <div className="right_controls">
-            <label className="toggle">
+            {/* <label className="toggle">
               <input
                 type="checkbox"
                 checked={onlyOpen}
@@ -171,18 +190,33 @@ export default function HomePage() {
                 }
               />
               <span>신청가능</span>
-            </label>
+            </label> */}
 
-            <select
-              className="sort_select"
-              value={sortKey}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setSortKey(e.target.value)
-              }
-            >
-              <option value="name">이름순</option>
-              <option value="dday">마감 임박순</option>
-            </select>
+            <div className="sort_dropdown" ref={sort_ref}>
+              <button
+                type="button"
+                className="sort_trigger"
+                onClick={() => set_sort_open((v) => !v)}
+              >
+                {SORT_OPTIONS.find((o) => o.value === sortKey)?.label ?? "정렬"}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              {sort_open && (
+                <ul className="sort_menu">
+                  {SORT_OPTIONS.map((o) => (
+                    <li
+                      key={o.value}
+                      className={`sort_option${sortKey === o.value ? " active" : ""}`}
+                      onClick={() => { setSortKey(o.value); set_sort_open(false); }}
+                    >
+                      {o.label}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -200,51 +234,17 @@ export default function HomePage() {
                 className="club_card"
                 onClick={() => nav(`/club/${c.id}`)}
               >
-                <div className="club_head_row">
-                  <img
-                    className="club_logo"
-                    src={c.logo}
-                    alt={`${c.name} 로고`}
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = DEFAULT_LOGO;
-                    }}
-                  />
-                  <div className="club_head_left">
-                    <h3 className="club_name">{c.name}</h3>
-                    <div className="club_meta_row">
-                      <span
-                        className={`badge ${
-                          c.status === "open"
-                            ? "open"
-                            : c.status === "upcoming"
-                              ? "upcoming"
-                              : "closed"
-                        }`}
-                      >
-                        {c.status === "open"
-                          ? "신청 가능"
-                          : c.status === "upcoming"
-                            ? "모집 예정"
-                            : "신청 불가"}
-                      </span>
-                      {c.members != null && (
-                        <span className="members">· {c.members}명</span>
-                      )}
-                    </div>
-                  </div>
-                  {/* <span className={`dday ${ddayClass(c.dday)}`}>
-                    {ddayLabel(c.dday)}
-                  </span> */}
-                </div>
-
+                <img
+                  className="club_logo"
+                  src={c.logo}
+                  alt={`${c.name} 로고`}
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = DEFAULT_LOGO;
+                  }}
+                />
+                <h3 className="club_name">{c.name}</h3>
                 <p className="club_desc">{c.desc}</p>
-
-                <div className="club_foot_row">
-                  {c.deadline && (
-                    <span className="deadline">모집마감일 {c.deadline}</span>
-                  )}
-                </div>
               </article>
             ))}
 

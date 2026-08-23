@@ -299,7 +299,9 @@ section.intro.card {
 }
 
 section.intro.card .desc.rich_desc {
-  max-width: 100%;
+  text-align: center;
+  max-width: 390px;
+  margin-inline: auto;
   box-sizing: border-box;
 }
 

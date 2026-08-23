@@ -32,7 +32,9 @@ function get_d_day(end_date_str: string | null): number | null {
   today.setHours(0, 0, 0, 0);
   const end = new Date(end_date_str);
   if (isNaN(end.getTime())) return null;
-  const diff = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const diff = Math.round(
+    (end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  );
   return diff >= 0 ? diff : null;
 }
 
@@ -49,7 +51,7 @@ export default function AdminDashboard() {
   today.setHours(0, 0, 0, 0);
 
   const [club_id, set_club_id] = useState<number | null>(null);
-const [club_status, set_club_status] = useState<string | null>(null);
+  const [club_status, set_club_status] = useState<string | null>(null);
   const [club_start_date, set_club_start_date] = useState<string | null>(null);
   const [club_end_date, set_club_end_date] = useState<string | null>(null);
   const [loading, set_loading] = useState(true);
@@ -94,29 +96,37 @@ const [club_status, set_club_status] = useState<string | null>(null);
   };
 
   const prev_month = () => {
-    if (cal_month === 0) { set_cal_year(cal_year - 1); set_cal_month(11); }
-    else set_cal_month(cal_month - 1);
+    if (cal_month === 0) {
+      set_cal_year(cal_year - 1);
+      set_cal_month(11);
+    } else set_cal_month(cal_month - 1);
   };
   const next_month = () => {
-    if (cal_month === 11) { set_cal_year(cal_year + 1); set_cal_month(0); }
-    else set_cal_month(cal_month + 1);
+    if (cal_month === 11) {
+      set_cal_year(cal_year + 1);
+      set_cal_month(0);
+    } else set_cal_month(cal_month + 1);
   };
 
   const calendar_days = get_calendar_days(cal_year, cal_month);
   const d_day = get_d_day(club_end_date);
 
-  const today_str = to_date_str(today.getFullYear(), today.getMonth(), today.getDate());
+  const today_str = to_date_str(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
 
-  // 달력에 모집 시작/종료 날짜 표시
-  const event_map: Record<string, string> = {};
-  if (club_start_date) {
-    const s = club_start_date.slice(0, 10);
-    event_map[s] = "open";
-  }
-  if (club_end_date) {
-    const e = club_end_date.slice(0, 10);
-    event_map[e] = "deadline";
-  }
+  // 달력에 모집 시작/종료 날짜 표시 (주석처리)
+  // const event_map: Record<string, string> = {};
+  // if (club_start_date) {
+  //   const s = club_start_date.slice(0, 10);
+  //   event_map[s] = "open";
+  // }
+  // if (club_end_date) {
+  //   const e = club_end_date.slice(0, 10);
+  //   event_map[e] = "deadline";
+  // }
 
   return (
     <div className="adm-root">
@@ -126,8 +136,19 @@ const [club_status, set_club_status] = useState<string | null>(null);
             <img src="/images/2.png" alt="SMU Club 로고" className="adm-logo" />
           </div>
           <div className="adm-header-actions">
-            <button type="button" className="adm-logout-btn" onClick={on_logout}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <button
+              type="button"
+              className="adm-logout-btn"
+              onClick={on_logout}
+            >
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
@@ -139,60 +160,90 @@ const [club_status, set_club_status] = useState<string | null>(null);
       </header>
 
       <main className="adm-main">
-        {error_msg && <p style={{ color: "#a82d2f", textAlign: "center", padding: "8px" }}>{error_msg}</p>}
+        {error_msg && (
+          <p style={{ color: "#a82d2f", textAlign: "center", padding: "8px" }}>
+            {error_msg}
+          </p>
+        )}
 
         <div className="adm-body-grid">
-          {/* 좌측: 동아리 페이지 미리보기 (2행 스팬) */}
-          <div className="adm-panel adm-panel-preview">
-            {club_id ? (
-              <iframe
-                src={`/club/${club_id}?preview=1`}
-                title="동아리 페이지 미리보기"
-                className="adm-preview-iframe"
-              />
-            ) : (
-              <div className="adm-preview-placeholder">
-                {loading ? "불러오는 중..." : "동아리 정보를 불러올 수 없습니다."}
-              </div>
-            )}
-          </div>
-
-          {/* 우측 상단: 동아리 관리 */}
+          {/* 동아리 관리 */}
           <div className="adm-panel">
-            <div className="adm-recruit-status">
+            {/* <div className="adm-recruit-status">
               <div className="adm-recruit-status-info">
                 <span className="adm-recruit-label">현재 상태</span>
                 <span className="adm-recruit-state">
                   {loading ? "불러오는 중..." : status_label(club_status)}
                 </span>
               </div>
-            </div>
+            </div> */}
 
             <ul className="adm-menu-list">
-              <li className="adm-menu-item" onClick={() => club_id && navigate(`/club/${club_id}`)}>
+              <li
+                className="adm-menu-item"
+                onClick={() => club_id && navigate(`/club/${club_id}`)}
+              >
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">동아리 페이지</span>
-                  <span className="adm-menu-item-desc">동아리 페이지를 확인합니다</span>
+                  <span className="adm-menu-item-desc">
+                    동아리 페이지를 확인합니다
+                  </span>
                 </div>
-                <svg className="adm-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  className="adm-chevron"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </li>
-              <li className="adm-menu-item" onClick={() => club_id && navigate(`/admin/club_info_edit/${club_id}`)}>
+              <li
+                className="adm-menu-item"
+                onClick={() =>
+                  club_id && navigate(`/admin/club_info_edit/${club_id}`)
+                }
+              >
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">동아리 정보 수정</span>
-                  <span className="adm-menu-item-desc">동아리 정보 및 상태를 변경합니다</span>
+                  <span className="adm-menu-item-desc">
+                    동아리 정보 및 상태를 변경합니다
+                  </span>
                 </div>
-                <svg className="adm-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  className="adm-chevron"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </li>
-              <li className="adm-menu-item" onClick={() => navigate("/admin/mypage")}>
+              <li
+                className="adm-menu-item"
+                onClick={() => navigate("/admin/mypage")}
+              >
                 <div className="adm-menu-item-text">
                   <span className="adm-menu-item-name">비밀번호 수정</span>
-                  <span className="adm-menu-item-desc">관리자 비밀번호를 변경합니다</span>
+                  <span className="adm-menu-item-desc">
+                    비밀번호를 변경합니다
+                  </span>
                 </div>
-                <svg className="adm-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  className="adm-chevron"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </li>
@@ -201,20 +252,44 @@ const [club_status, set_club_status] = useState<string | null>(null);
 
           {/* 우측: 달력 */}
           <div className="adm-panel adm-panel-calendar">
-            <div className="adm-dday-badge">
+            {/* <div className="adm-dday-badge">
               <span className="adm-dday-label">모집 마감까지</span>
               {d_day !== null && <span className="adm-dday-count">D-{d_day}</span>}
-            </div>
+            </div> */}
 
             <div className="adm-cal-header">
-              <button type="button" className="adm-cal-nav" onClick={prev_month}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <button
+                type="button"
+                className="adm-cal-nav"
+                onClick={prev_month}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="15 18 9 12 15 6" />
                 </svg>
               </button>
-              <span className="adm-cal-month">{cal_year}년 {cal_month + 1}월</span>
-              <button type="button" className="adm-cal-nav" onClick={next_month}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <span className="adm-cal-month">
+                {cal_year}년 {cal_month + 1}월
+              </span>
+              <button
+                type="button"
+                className="adm-cal-nav"
+                onClick={next_month}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </button>
@@ -222,30 +297,47 @@ const [club_status, set_club_status] = useState<string | null>(null);
 
             <div className="adm-cal-grid">
               {DAY_LABELS.map((d) => (
-                <div key={d} className="adm-cal-day-label">{d}</div>
+                <div key={d} className="adm-cal-day-label">
+                  {d}
+                </div>
               ))}
               {calendar_days.map((day, idx) => {
-                if (day === null) return <div key={`empty-${idx}`} className="adm-cal-cell adm-cal-cell-empty" />;
+                if (day === null)
+                  return (
+                    <div
+                      key={`empty-${idx}`}
+                      className="adm-cal-cell adm-cal-cell-empty"
+                    />
+                  );
                 const date_str = to_date_str(cal_year, cal_month, day);
                 const is_today = date_str === today_str;
-                const event_type = event_map[date_str];
+                // const event_type = event_map[date_str];
                 return (
-                  <div key={date_str} className={`adm-cal-cell${is_today ? " adm-cal-today" : ""}`}>
+                  <div
+                    key={date_str}
+                    className={`adm-cal-cell${is_today ? " adm-cal-today" : ""}`}
+                  >
                     <span className="adm-cal-num">{day}</span>
-                    {event_type && <span className={`adm-cal-dot adm-cal-dot-${event_type}`} />}
+                    {/* {event_type && (
+                      <span
+                        className={`adm-cal-dot adm-cal-dot-${event_type}`}
+                      />
+                    )} */}
                   </div>
                 );
               })}
             </div>
 
-            <div className="adm-cal-legend">
+            {/* <div className="adm-cal-legend">
               <span className="adm-legend-item">
-                <span className="adm-cal-dot adm-cal-dot-open" />오픈
+                <span className="adm-cal-dot adm-cal-dot-open" />
+                오픈
               </span>
               <span className="adm-legend-item">
-                <span className="adm-cal-dot adm-cal-dot-deadline" />마감일
+                <span className="adm-cal-dot adm-cal-dot-deadline" />
+                마감일
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
       </main>
@@ -253,7 +345,11 @@ const [club_status, set_club_status] = useState<string | null>(null);
       <div className="page-footer">
         <p>© 2025 smu-club. 상명대학교 동아리 플랫폼</p>
         <p>
-          <a href="https://github.com/smu-human/smu-club" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://github.com/smu-human/smu-club"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Github
           </a>
         </p>

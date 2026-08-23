@@ -253,21 +253,21 @@ export default function ClubPage() {
                   <li>
                     <span className="label">회장</span>
                     <span className="val">
-                      {is_guest ? "로그인 필요" : club.president || "-"}
+                      {club.president || "-"}
                     </span>
                   </li>
 
                   <li>
                     <span className="label">인스타그램</span>
                     <span className="val">
-                      {is_guest ? "로그인 필요" : club.contact || "-"}
+                      {club.contact || "-"}
                     </span>
                   </li>
 
-                  <li>
+                  {/* <li>
                     <span className="label">모집 마감</span>
                     <span className="val">{fmt_date(club.recruitingEnd)}</span>
-                  </li>
+                  </li> */}
                 </ul>
               </section>
               <section className="intro card">
