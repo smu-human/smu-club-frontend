@@ -297,7 +297,7 @@
 .cr_editor_col .toastui-editor .ProseMirror {
   width: 320px;
   margin: 0 auto !important;
-  padding: 12px !important;
+  padding: 0px !important;
   color: #374151;
   font-size: 14px;
   line-height: 1.6;
@@ -331,7 +331,6 @@
     sans-serif !important;
 }
 
-
 /* 풀스크린 */
 .cr_editor_fullscreen {
   position: fixed;
@@ -348,7 +347,6 @@
   grid-template-columns: 1.2fr auto;
   align-items: start;
 }
-
 
 /* 반응형 */
 @media (max-width: 900px) {
