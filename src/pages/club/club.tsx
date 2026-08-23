@@ -200,7 +200,7 @@ export default function ClubPage() {
               <button
                 className="back-btn"
                 aria-label="뒤로가기"
-                onClick={() => nav("/")}
+                onClick={() => nav(-1)}
               >
                 <svg
                   className="icon"
