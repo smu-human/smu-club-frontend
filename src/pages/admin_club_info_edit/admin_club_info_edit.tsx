@@ -28,6 +28,8 @@ export default function AdminClubInfoEdit() {
   const [over_idx, set_over_idx] = useState<number | null>(null);
 
   const [is_new_club, set_is_new_club] = useState(false);
+  const [is_loading, set_is_loading] = useState(false);
+  const [load_error, set_load_error] = useState("");
   const [is_saving, set_is_saving] = useState(false);
   const [preview_html, set_preview_html] = useState("");
   const [show_live_preview, set_show_live_preview] = useState(true);
@@ -61,13 +63,28 @@ export default function AdminClubInfoEdit() {
   // 클럽 데이터 로드
   useEffect(() => {
     if (!clubId) return;
+    let cancelled = false;
+    set_is_loading(true);
+    set_load_error("");
+    set_is_new_club(false);
+    set_club_name("");
+    set_club_one_line("");
+    set_leader_name("");
+    set_instagram("");
+    set_deadline("");
+    set_editor_html("");
+    set_preview_html("");
+    set_images([]);
+    set_thumb_urls([]);
     fetch_owner_club_detail(clubId)
       .then((d) => {
+        if (cancelled) return;
         if (!d) {
           set_is_new_club(true);
           return;
         }
         set_club_name(d.name ?? "");
+        set_club_one_line(d.title ?? "");
         set_leader_name(d.presidentName ?? "");
         set_instagram(d.contact ?? "");
         const dl = d.recruitDeadline ?? d.endDate ?? "";
@@ -75,7 +92,21 @@ export default function AdminClubInfoEdit() {
         const desc = d.description ?? "";
         set_editor_html(desc);
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        const status = (err as { status?: number })?.status;
+        if (status === 404) {
+          set_is_new_club(true);
+        } else {
+          set_load_error((err as Error)?.message || "동아리 정보를 불러오지 못했습니다.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) set_is_loading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [clubId]);
 
   // 초기 프리뷰 동기화
@@ -148,7 +179,11 @@ export default function AdminClubInfoEdit() {
   };
 
   const on_save = async () => {
-    if (is_saving) return;
+    if (is_saving || is_loading) return;
+    if (load_error) {
+      alert("동아리 정보를 불러오지 못했습니다. 페이지를 새로고침해주세요.");
+      return;
+    }
     if (!deadline) {
       alert("모집 마감일을 설정해주세요.");
       return;
@@ -410,10 +445,13 @@ export default function AdminClubInfoEdit() {
           </div>
         </section>
 
+        {load_error && (
+          <p style={{ color: "#a82d2f", textAlign: "center", marginBottom: "8px" }}>{load_error}</p>
+        )}
         <button
           className="cr_primary_btn cr_save_btn"
           onClick={on_save}
-          disabled={is_saving}
+          disabled={is_saving || is_loading || !!load_error}
         >
           {is_saving ? "저장 중..." : "저장하기"}
         </button>

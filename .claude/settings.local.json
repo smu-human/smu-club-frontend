@@ -27,7 +27,8 @@
       "Bash(npx tsc:*)",
       "Bash(npm run:*)",
       "Bash(xargs grep:*)",
-      "Bash(ls C:/smu-club-frontend/.env*)"
+      "Bash(ls C:/smu-club-frontend/.env*)",
+      "Bash(grep -E \"\\.(jsx?|tsx?)$\")"
     ]
   }
 }
