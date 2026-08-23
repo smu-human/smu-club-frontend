@@ -11,37 +11,6 @@ type ImageItem =
   | { type: "existing"; url: string; key: string }
   | { type: "new"; file: File; preview_url: string };
 
-const CANVAS_WIDTH = 320;
-const MIN_SCALE = 0.3;
-
-function useScaledCanvas() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [height, setHeight] = useState<number | undefined>(undefined);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    const canvas = canvasRef.current;
-    if (!container || !canvas) return;
-
-    const update = () => {
-      const s = Math.min(1, Math.max(MIN_SCALE, container.offsetWidth / CANVAS_WIDTH));
-      setScale(s);
-      requestAnimationFrame(() => {
-        if (canvasRef.current) setHeight(canvasRef.current.scrollHeight * s);
-      });
-    };
-
-    const ro = new ResizeObserver(update);
-    ro.observe(container);
-    update();
-    return () => ro.disconnect();
-  }, []);
-
-  return { containerRef, canvasRef, scale, height };
-}
-
 function extract_object_key(v: unknown): string {
   const s = String(v || "").trim();
   if (!s.startsWith("http")) return s;
@@ -69,7 +38,6 @@ export default function AdminClubInfoEdit() {
   const { clubId } = useParams<{ clubId: string }>();
   const editorRef = useRef<{ getInstance(): { getHTML(): string } } | null>(null);
   const scroll_ref = useRef<HTMLDivElement | null>(null);
-  const { containerRef: previewContainerRef, canvasRef: previewCanvasRef, scale: previewScale, height: previewHeight } = useScaledCanvas();
 
   const today_str = new Date().toISOString().slice(0, 10);
 
@@ -90,11 +58,7 @@ export default function AdminClubInfoEdit() {
   const [is_loading, set_is_loading] = useState(false);
   const [load_error, set_load_error] = useState("");
   const [is_saving, set_is_saving] = useState(false);
-  const [preview_html, set_preview_html] = useState("");
-  const [show_live_preview, set_show_live_preview] = useState(true);
   const [is_editor_fullscreen, set_is_editor_fullscreen] = useState(false);
-
-  const preview_timer_ref = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 초기 스크롤 최상단
   useEffect(() => {
@@ -132,7 +96,6 @@ export default function AdminClubInfoEdit() {
     set_instagram("");
     set_deadline("");
     set_editor_html("");
-    set_preview_html("");
     set_image_list([]);
     fetch_owner_club_detail(clubId)
       .then((d) => {
@@ -149,7 +112,6 @@ export default function AdminClubInfoEdit() {
         set_deadline(dl ? String(dl).slice(0, 10) : "");
         const desc = d.description ?? "";
         set_editor_html(desc);
-        set_preview_html(desc);
         if (d.clubImages && d.clubImages.length > 0) {
           set_image_list(
             d.clubImages.map((img: { imageUrl: string }) => ({
@@ -176,18 +138,6 @@ export default function AdminClubInfoEdit() {
       cancelled = true;
     };
   }, [clubId]);
-
-  // 초기 프리뷰 동기화
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const html = editorRef.current?.getInstance().getHTML() || "";
-      set_preview_html(html);
-    }, 0);
-    return () => {
-      clearTimeout(t);
-      if (preview_timer_ref.current) clearTimeout(preview_timer_ref.current);
-    };
-  }, []);
 
   // ESC 풀스크린 닫기
   useEffect(() => {
@@ -223,14 +173,6 @@ export default function AdminClubInfoEdit() {
       });
     };
   }, []);
-
-  const sync_preview_from_editor = () => {
-    if (preview_timer_ref.current) clearTimeout(preview_timer_ref.current);
-    preview_timer_ref.current = setTimeout(() => {
-      const html = editorRef.current?.getInstance().getHTML() || "";
-      set_preview_html(html);
-    }, 200);
-  };
 
   const on_pick_images = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -487,70 +429,25 @@ export default function AdminClubInfoEdit() {
               <button
                 type="button"
                 className="cr_mini_btn"
-                onClick={() => set_show_live_preview((v) => !v)}
-              >
-                {show_live_preview ? "프리뷰 숨기기" : "프리뷰 보기"}
-              </button>
-              <button
-                type="button"
-                className="cr_mini_btn"
                 onClick={() => {
                   set_is_editor_fullscreen((v) => !v);
-                  setTimeout(() => {
-                    const html = editorRef.current?.getInstance().getHTML() || "";
-                    set_preview_html(html);
-                  }, 0);
                 }}
               >
                 {is_editor_fullscreen ? "전체화면 닫기 (ESC)" : "전체화면"}
               </button>
             </div>
 
-            <div className={["cr_editor_grid", show_live_preview ? "with_preview" : "no_preview"].join(" ")}>
-              <div className="cr_editor_col">
-                <Editor
-                  key={editor_html}
-                  ref={editorRef}
-                  initialValue={editor_html}
-                  height={is_editor_fullscreen ? "74vh" : "520px"}
-                  initialEditType="wysiwyg"
-                  previewStyle="tab"
-                  usageStatistics={false}
-                  placeholder="동아리 소개와 활동 내용을 자유롭게 작성하세요."
-                  onChange={sync_preview_from_editor}
-                />
-              </div>
-
-              {show_live_preview && (
-                <div className="cr_preview_col">
-                  <section className="acie_intro_card">
-                    <h2 className="acie_section_title">동아리 소개</h2>
-                    <div
-                      ref={previewContainerRef}
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        overflow: previewScale <= MIN_SCALE ? 'auto' : 'hidden',
-                        height: previewHeight,
-                      }}
-                    >
-                      <div
-                        ref={previewCanvasRef}
-                        style={{
-                          width: CANVAS_WIDTH,
-                          flexShrink: 0,
-                          transform: `scale(${previewScale})`,
-                          transformOrigin: 'top center',
-                        }}
-                        className="desc rich_desc toastui-editor-contents"
-                        dangerouslySetInnerHTML={{ __html: preview_html || "<p></p>" }}
-                      />
-                    </div>
-                  </section>
-                </div>
-              )}
+            <div className="cr_editor_col">
+              <Editor
+                key={editor_html}
+                ref={editorRef}
+                initialValue={editor_html}
+                height={is_editor_fullscreen ? "74vh" : "520px"}
+                initialEditType="wysiwyg"
+                previewStyle="tab"
+                usageStatistics={false}
+                placeholder="동아리 소개와 활동 내용을 자유롭게 작성하세요."
+              />
             </div>
           </div>
         </section>
