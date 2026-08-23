@@ -294,15 +294,12 @@ body {
 
 /* 카드 자체는 반응형 */
 section.intro.card {
-  width: 100%;
-  max-width: 500px;
+  width: min(500px, 100%);
   box-sizing: border-box;
-  overflow: hidden;
 }
 
 section.intro.card .desc.rich_desc {
   width: 330px;
-  max-width: 100%;
   margin-inline: auto;
   box-sizing: border-box;
 }
