@@ -316,6 +316,8 @@ export default function ClubPage() {
                     style={{
                       position: 'relative',
                       width: '100%',
+                      display: 'flex',
+                      justifyContent: 'center',
                       overflow: descScale <= MIN_SCALE ? 'auto' : 'hidden',
                       height: descHeight,
                     }}
@@ -325,7 +327,7 @@ export default function ClubPage() {
                       style={{
                         width: CANVAS_WIDTH,
                         transform: `scale(${descScale})`,
-                        transformOrigin: 'top left',
+                        transformOrigin: 'top center',
                       }}
                       className="desc rich_desc club_description toastui-editor-contents"
                       dangerouslySetInnerHTML={{ __html: club.description }}
