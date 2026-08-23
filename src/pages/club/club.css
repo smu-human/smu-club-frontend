@@ -299,7 +299,7 @@ section.intro.card {
 }
 
 section.intro.card .desc.rich_desc {
-  width: 300px;
+  width: 90%;
   margin-inline: auto;
   box-sizing: border-box;
 }
@@ -329,8 +329,7 @@ section.intro.card .desc.rich_desc table {
 }
 
 .club_page--preview section.intro.card .desc.rich_desc {
-  width: 300px;
-  max-width: 100%;
+  width: 90%;
 }
 
 .club_page--preview .card {
