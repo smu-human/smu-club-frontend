@@ -54,6 +54,9 @@ export default function AdminClubInfoEdit() {
   const drag_idx = useRef<number | null>(null);
   const [over_idx, set_over_idx] = useState<number | null>(null);
   const img_row_refs = useRef<(HTMLDivElement | null)[]>([]);
+  const ghost_ref = useRef<HTMLDivElement | null>(null);
+  const ghost_start_top = useRef(0);
+  const touch_start_y = useRef(0);
 
   const [is_new_club, set_is_new_club] = useState(false);
   const [is_loading, set_is_loading] = useState(false);
@@ -200,8 +203,11 @@ export default function AdminClubInfoEdit() {
     });
   };
 
-  const get_touch_over_idx = (touch: React.Touch): number | null => {
+  const get_touch_over_idx = (touch: React.Touch | Touch): number | null => {
+    const dragging_row = drag_idx.current !== null ? img_row_refs.current[drag_idx.current] : null;
+    if (dragging_row) dragging_row.style.visibility = 'hidden';
     const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (dragging_row) dragging_row.style.visibility = '';
     if (!el) return null;
     const idx = img_row_refs.current.findIndex(
       (ref) => ref && (ref === el || ref.contains(el as Node))
@@ -209,20 +215,53 @@ export default function AdminClubInfoEdit() {
     return idx >= 0 ? idx : null;
   };
 
-  const on_touch_start = (idx: number) => {
+  const on_touch_start = (idx: number, e: React.TouchEvent) => {
     drag_idx.current = idx;
     set_over_idx(null);
+    const touch = e.touches[0];
+    touch_start_y.current = touch.clientY;
+
+    const row = img_row_refs.current[idx];
+    if (row) {
+      const rect = row.getBoundingClientRect();
+      ghost_start_top.current = rect.top;
+      const ghost = row.cloneNode(true) as HTMLDivElement;
+      ghost.style.cssText = `
+        position: fixed;
+        left: ${rect.left}px;
+        top: ${rect.top}px;
+        width: ${rect.width}px;
+        z-index: 9999;
+        opacity: 0.9;
+        pointer-events: none;
+        transform: scale(1.03);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        border-radius: 10px;
+        transition: none;
+      `;
+      document.body.appendChild(ghost);
+      ghost_ref.current = ghost;
+    }
   };
 
   const on_touch_move = (e: React.TouchEvent) => {
     e.preventDefault();
-    const over = get_touch_over_idx(e.touches[0]);
+    const touch = e.touches[0];
+    if (ghost_ref.current) {
+      const dy = touch.clientY - touch_start_y.current;
+      ghost_ref.current.style.top = `${ghost_start_top.current + dy}px`;
+    }
+    const over = get_touch_over_idx(touch);
     set_over_idx(over);
   };
 
   const on_touch_end = (e: React.TouchEvent) => {
+    if (ghost_ref.current) {
+      document.body.removeChild(ghost_ref.current);
+      ghost_ref.current = null;
+    }
     const over = get_touch_over_idx(e.changedTouches[0]);
-    if (drag_idx.current !== null && over !== null) {
+    if (drag_idx.current !== null && over !== null && drag_idx.current !== over) {
       reorder_images(drag_idx.current, over);
     }
     drag_idx.current = null;
@@ -345,7 +384,7 @@ export default function AdminClubInfoEdit() {
                           drag_idx.current = null;
                           set_over_idx(null);
                         }}
-                        onTouchStart={() => on_touch_start(idx)}
+                        onTouchStart={(e) => on_touch_start(idx, e)}
                         onTouchMove={on_touch_move}
                         onTouchEnd={on_touch_end}
                       >
