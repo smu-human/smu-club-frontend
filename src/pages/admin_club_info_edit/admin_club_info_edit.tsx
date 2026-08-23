@@ -149,6 +149,7 @@ export default function AdminClubInfoEdit() {
         set_deadline(dl ? String(dl).slice(0, 10) : "");
         const desc = d.description ?? "";
         set_editor_html(desc);
+        set_preview_html(desc);
         if (d.clubImages && d.clubImages.length > 0) {
           set_image_list(
             d.clubImages.map((img: { imageUrl: string }) => ({
