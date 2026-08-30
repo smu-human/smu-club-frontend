@@ -334,3 +334,32 @@ section.intro.card .desc.rich_desc table {
   width: auto;
   box-sizing: border-box;
 }
+
+/* ===== 헤더 제목 스켈레톤 =====
+   로딩 중 "클럽 1 상세" 같은 임시 문구가 보였다가 실제 이름으로 바뀌는
+   깜빡임을 없애기 위한 자리표시자. .page-header h1(18px/700)과 같은
+   높이를 차지해 레이아웃이 밀리지 않는다. */
+.club_title_skeleton {
+  width: 140px;
+  height: 20px;
+  margin: 0;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #eef0f3 25%, #f7f8fa 37%, #eef0f3 63%);
+  background-size: 400% 100%;
+  animation: club-title-skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes club-title-skeleton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .club_title_skeleton {
+    animation: none;
+  }
+}
