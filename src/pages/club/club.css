@@ -346,10 +346,10 @@ section.intro.card .desc.rich_desc table {
   border-radius: 4px;
   background: linear-gradient(90deg, #eef0f3 25%, #f7f8fa 37%, #eef0f3 63%);
   background-size: 400% 100%;
-  animation: club_title_skeleton_shimmer 1.2s ease-in-out infinite;
+  animation: club-title-skeleton-shimmer 1.2s ease-in-out infinite;
 }
 
-@keyframes club_title_skeleton_shimmer {
+@keyframes club-title-skeleton-shimmer {
   0% {
     background-position: 100% 50%;
   }
