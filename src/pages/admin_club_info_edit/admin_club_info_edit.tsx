@@ -6,6 +6,7 @@ import "./admin_club_info_edit.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { fetch_owner_club_detail, owner_register_club, owner_update_club, owner_upload_images } from "../../lib/api";
+import { CLUB_TYPE_OPTIONS, ClubTypeValue, DEFAULT_CLUB_TYPE, to_club_type } from "../../lib/types";
 
 type ImageItem =
   | { type: "existing"; url: string; key: string }
@@ -42,6 +43,7 @@ export default function AdminClubInfoEdit() {
   const today_str = new Date().toISOString().slice(0, 10);
 
   const [club_name, set_club_name] = useState("");
+  const [club_type, set_club_type] = useState<ClubTypeValue>(DEFAULT_CLUB_TYPE);
   const [club_one_line, set_club_one_line] = useState("");
   const [leader_name, set_leader_name] = useState("");
   const [instagram, set_instagram] = useState("");
@@ -95,6 +97,7 @@ export default function AdminClubInfoEdit() {
     set_load_error("");
     set_is_new_club(false);
     set_club_name("");
+    set_club_type(DEFAULT_CLUB_TYPE);
     set_club_one_line("");
     set_leader_name("");
     set_instagram("");
@@ -109,6 +112,7 @@ export default function AdminClubInfoEdit() {
           return;
         }
         set_club_name(d.name ?? "");
+        set_club_type(to_club_type(d.type));
         set_club_one_line(d.title ?? "");
         set_leader_name(d.presidentName ?? "");
         set_instagram(d.contact ?? "");
@@ -310,7 +314,7 @@ export default function AdminClubInfoEdit() {
         contact: instagram,
         recruitDeadline: deadline || null,
         description: description_html,
-        type: "CENTRAL",
+        type: club_type,
         uploadedImageFileNames,
       };
 
@@ -446,6 +450,22 @@ export default function AdminClubInfoEdit() {
                 value={club_name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_club_name(e.target.value)}
               />
+
+              <label className="cr_field_label" htmlFor="acie_type">동아리 구분</label>
+              <select
+                id="acie_type"
+                className="cr_field_input"
+                value={club_type}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  set_club_type(e.target.value as ClubTypeValue)
+                }
+              >
+                {CLUB_TYPE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
 
               <label className="cr_field_label" htmlFor="acie_one_line">동아리 한줄 소개</label>
               <input

@@ -28,6 +28,26 @@ export interface ClubImage {
   orderNumber?: number;
 }
 
+/**
+ * 동아리 구분. 백엔드 ClubType enum과 1:1로 대응하며, 전송값은 반드시 이 문자열이어야 한다
+ * (다른 값은 백엔드에서 400). 표시용 한글 라벨은 CLUB_TYPE_OPTIONS를 쓴다.
+ */
+export type ClubTypeValue = "CENTRAL" | "ETC";
+
+export const DEFAULT_CLUB_TYPE: ClubTypeValue = "CENTRAL";
+
+export const CLUB_TYPE_OPTIONS: ReadonlyArray<{ value: ClubTypeValue; label: string }> = [
+  { value: "CENTRAL", label: "중앙동아리" },
+  { value: "ETC", label: "그 외 동아리" },
+];
+
+/** 백엔드가 내려준 값이 알 수 없는 문자열이어도 셀렉트가 깨지지 않도록 보정한다. */
+export function to_club_type(value: unknown): ClubTypeValue {
+  return CLUB_TYPE_OPTIONS.some((o) => o.value === value)
+    ? (value as ClubTypeValue)
+    : DEFAULT_CLUB_TYPE;
+}
+
 export interface Club {
   id: number;
   name: string;
@@ -68,6 +88,8 @@ export interface ClubListItem {
   recruitingStatus?: string;
   title?: string;
   thumbnailUrl?: string;
+  /** 목록은 백엔드가 중앙동아리 우선으로 정렬해 내려준다. 프론트에서 재정렬하지 않는다. */
+  type?: ClubTypeValue;
 }
 
 // ===== 지원서 질문/답변 =====
