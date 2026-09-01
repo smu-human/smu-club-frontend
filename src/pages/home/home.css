@@ -307,3 +307,63 @@
   padding: 36px 0;
   color: #6b7280;
 } /* ===== 데스크톱: 카드 3열, 헤더 390 유지 ===== */
+
+/* ===== 눌렀다는 반응 =====
+   카드는 탭하면 상세로 넘어가는데 아무 변화가 없어서 눌린 건지 알기 어려웠다.
+   누르는 동안만 살짝 가라앉히고 배경을 낮춘다. 기존 규칙을 건드리지 않으려고
+   같은 선택자로 따로 둔다. */
+.home_main .club_card {
+  transition:
+    transform 0.12s ease,
+    background-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.home_main .club_card:active {
+  transform: scale(0.985);
+  background-color: #f3f4f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home_main .club_card {
+    transition: none;
+  }
+  .home_main .club_card:active {
+    transform: none;
+  }
+}
+
+/* ===== 목록 로딩 스켈레톤 =====
+   카드와 같은 그리드를 쓰므로 목록이 도착해도 레이아웃이 튀지 않는다. */
+.home_main .club_card--skeleton {
+  cursor: default;
+}
+
+.home_main .club_card--skeleton:active {
+  transform: none;
+  background-color: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+/* 썸네일 자리 (.club_logo 의 그리드 위치/크기를 그대로 물려받는다) */
+.home_main .club_card--skeleton .club_logo {
+  border-radius: 0;
+}
+
+.home_main .card_skeleton_name {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 12px 12px 4px;
+  width: 55%;
+  height: 16px;
+}
+
+.home_main .card_skeleton_desc {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  margin: 0 12px 12px;
+  width: 80%;
+  height: 13px;
+}
