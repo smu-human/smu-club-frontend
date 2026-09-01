@@ -224,11 +224,28 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="home_main">
+      <main className="home_main" aria-busy={is_loading}>
         {error_msg && <div className="error_msg">{error_msg}</div>}
 
         {is_loading ? (
-          <div className="list_loading">동아리 목록을 불러오는 중...</div>
+          /* 카드와 같은 골격의 자리표시자. 목록이 도착해도 레이아웃이 튀지 않는다.
+             블록 자체는 장식이라 스크린리더에서 숨기고, 대신 안내 문구를 따로 둔다. */
+          <>
+            <p className="sr_only" role="status">
+              동아리 목록을 불러오는 중
+            </p>
+            {Array.from({ length: 6 }, (_, i) => (
+              <article
+                className="club_card club_card--skeleton"
+                key={i}
+                aria-hidden="true"
+              >
+                <div className="club_logo skeleton" />
+                <div className="skeleton card_skeleton_name" />
+                <div className="skeleton card_skeleton_desc" />
+              </article>
+            ))}
+          </>
         ) : (
           <>
             {filtered.map((c) => (
