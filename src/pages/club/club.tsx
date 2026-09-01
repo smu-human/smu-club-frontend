@@ -185,7 +185,7 @@ export default function ClubPage() {
         </header>
       )}
 
-      <main className="club_main safe-area-padding">
+      <main className="club_main safe-area-padding" aria-busy={loading}>
         <div className="container">
           {error_msg && (
             <p
@@ -200,16 +200,16 @@ export default function ClubPage() {
             /* 실제 화면과 같은 골격(갤러리 / 기본 정보 / 소개)을 회색 블록으로 먼저
                깔아둔다. "불러오는 중" 텍스트 한 줄과 달리 지금 뭘 기다리는지 보이고,
                값이 도착해도 카드 위치가 튀지 않는다. */
-            <div
-              className="club_skeleton"
-              role="status"
-              aria-label="동아리 정보를 불러오는 중"
-            >
-              <section className="gallery card">
+            <div className="club_skeleton" role="status">
+              {/* 라이브 영역은 "내용"을 읽으므로 aria-label 대신 숨김 텍스트를 둔다.
+                  아래 회색 블록은 장식이라 스크린리더에서 숨긴다. */}
+              <span className="sr_only">동아리 정보를 불러오는 중</span>
+
+              <section className="gallery card" aria-hidden="true">
                 <div className="skeleton club_skeleton_slide" />
               </section>
 
-              <section className="club_meta card">
+              <section className="club_meta card" aria-hidden="true">
                 {[0, 1].map((i) => (
                   <div className="club_skeleton_row" key={i}>
                     <span className="skeleton club_skeleton_label" />
@@ -218,7 +218,7 @@ export default function ClubPage() {
                 ))}
               </section>
 
-              <section className="intro card">
+              <section className="intro card" aria-hidden="true">
                 <div className="skeleton club_skeleton_title" />
                 <div className="skeleton club_skeleton_line" />
                 <div className="skeleton club_skeleton_line" />

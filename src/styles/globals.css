@@ -244,3 +244,17 @@ body {
     animation: none;
   }
 }
+
+/* 화면에는 안 보이지만 스크린리더는 읽는 텍스트.
+   로딩 안내처럼 시각적으로는 스켈레톤이 대신하는 정보에 쓴다. */
+.sr_only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
