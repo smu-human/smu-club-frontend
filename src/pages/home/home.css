@@ -202,6 +202,12 @@
   display: grid !important;
   grid-template-columns: 110px 1fr;
   grid-template-rows: auto 1fr;
+  /* 카드 안쪽 여백을 두지 않아 썸네일이 카드 모서리까지 꽉 차게 한다.
+     제목/설명은 각자 .club_name / .club_desc 에서 여백을 갖는다.
+     (다른 페이지 CSS의 스코프 없는 .club_card 가 padding 14px / gap 10px 을
+     흘려보내므로 여기서 명시적으로 0을 준다.) */
+  gap: 0;
+  padding: 0;
 }
 .home_main .club_logo {
   grid-column: 1;
