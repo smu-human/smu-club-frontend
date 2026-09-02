@@ -47,7 +47,7 @@ body {
 .page-header {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 100;
   background: #fff;
   border-radius: 0 0 14px 14px; /* 하단 좌·우만 radius */
   padding: max(5px, var(--safe-top)) 16px 5px; /* safe-area 상단 여백 */

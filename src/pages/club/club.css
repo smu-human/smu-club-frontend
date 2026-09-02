@@ -25,6 +25,8 @@ body {
 .club_main {
   background-color: var(--club-bg);
   padding: 0 12px; /* ← 카드 양옆 여백 추가 */
+  position: relative;
+  z-index: 0; /* transform stacking context가 sticky 헤더(z-index:100) 아래에 머물도록 */
 }
 
 .club_page .club_main {
