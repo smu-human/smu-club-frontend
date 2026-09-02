@@ -1,15 +1,10 @@
 // src/pages/club/club.tsx (부분 교체: "지원하기" 노출 조건에 모집 시작 여부 추가)
 
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import "../../styles/globals.css";
 import "./club.css";
-import {
-  fetch_public_club,
-  fetch_owner_club_detail,
-  is_logged_in,
-  fetch_owner_managed_clubs,
-} from "../../lib/api";
+import { fetch_public_club } from "../../lib/api";
 import { Club } from "../../lib/types";
 
 const CANVAS_WIDTH = 320;
@@ -64,38 +59,7 @@ export default function ClubPage() {
   const [error_msg, set_error_msg] = useState("");
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  const [owner_ids, set_owner_ids] = useState<Set<string>>(new Set<string>());
   const { containerRef: descContainerRef, canvasRef: descCanvasRef, scale: descScale, height: descHeight } = useScaledCanvas();
-
-  const is_owner = useMemo(() => owner_ids.has(String(id)), [owner_ids, id]);
-
-  const is_guest = useMemo(() => !is_logged_in(), []);
-
-
-  useEffect(() => {
-    const load_owner = async () => {
-      if (!is_logged_in()) {
-        set_owner_ids(new Set<string>());
-        return;
-      }
-
-      try {
-        const ownerData = await fetch_owner_managed_clubs().catch(() => null);
-        const owners = Array.isArray(ownerData) ? ownerData : [];
-        const next_owner = new Set<string>(
-          owners
-            .map((c: unknown) => (c as Record<string, unknown>)?.clubId ?? (c as Record<string, unknown>)?.id ?? (c as Record<string, unknown>)?.club_id)
-            .filter((v: unknown) => v !== undefined && v !== null)
-            .map(String),
-        );
-        set_owner_ids(next_owner);
-      } catch {
-        set_owner_ids(new Set<string>());
-      }
-    };
-
-    load_owner();
-  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -103,14 +67,10 @@ export default function ClubPage() {
       set_error_msg("");
 
       try {
-        const logged_in = is_logged_in();
-
-        const data =
-          logged_in && is_owner
-            ? await fetch_owner_club_detail(id!)
-            : await fetch_public_club(id ?? "");
-
-        const club_data = data ?? null;
+        // 이 페이지가 읽는 필드(name/president/contact/recruitingEnd/description/clubImages)는
+        // 전부 공개 상세 응답에 있다. 운영자 여부를 따져 owner API로 분기하던 로직은
+        // 화면에 아무 차이도 만들지 않으면서 요청만 늘렸기 때문에 제거했다.
+        const club_data = (await fetch_public_club(id ?? "")) ?? null;
         setClub(club_data);
 
         const club_images = Array.isArray(club_data?.clubImages)
@@ -162,7 +122,7 @@ export default function ClubPage() {
     };
 
     load();
-  }, [id, is_owner]);
+  }, [id]);
 
   const goTo = (nextIdx: number) => {
     if (!carouselRef.current || images.length === 0) return;
@@ -213,13 +173,19 @@ export default function ClubPage() {
                 </svg>
               </button>
 
-              <h1>{club?.name || `클럽 ${id} 상세`}</h1>
+              {/* 로딩 중에는 id로 만든 임시 문구("클럽 1 상세") 대신 스켈레톤을 둔다.
+                  값이 실제로 비어 있을 때만 fallback을 쓴다. */}
+              {loading ? (
+                <h1 className="club_title_skeleton skeleton" aria-hidden="true" />
+              ) : (
+                <h1>{club?.name || "동아리 정보 없음"}</h1>
+              )}
             </div>
           </div>
         </header>
       )}
 
-      <main className="club_main safe-area-padding">
+      <main className="club_main safe-area-padding" aria-busy={loading}>
         <div className="container">
           {error_msg && (
             <p
@@ -231,7 +197,34 @@ export default function ClubPage() {
           )}
 
           {loading ? (
-            <div className="club-loading">동아리 정보를 불러오는 중...</div>
+            /* 실제 화면과 같은 골격(갤러리 / 기본 정보 / 소개)을 회색 블록으로 먼저
+               깔아둔다. "불러오는 중" 텍스트 한 줄과 달리 지금 뭘 기다리는지 보이고,
+               값이 도착해도 카드 위치가 튀지 않는다. */
+            <div className="club_skeleton" role="status">
+              {/* 라이브 영역은 "내용"을 읽으므로 aria-label 대신 숨김 텍스트를 둔다.
+                  아래 회색 블록은 장식이라 스크린리더에서 숨긴다. */}
+              <span className="sr_only">동아리 정보를 불러오는 중</span>
+
+              <section className="gallery card" aria-hidden="true">
+                <div className="skeleton club_skeleton_slide" />
+              </section>
+
+              <section className="club_meta card" aria-hidden="true">
+                {[0, 1].map((i) => (
+                  <div className="club_skeleton_row" key={i}>
+                    <span className="skeleton club_skeleton_label" />
+                    <span className="skeleton club_skeleton_val" />
+                  </div>
+                ))}
+              </section>
+
+              <section className="intro card" aria-hidden="true">
+                <div className="skeleton club_skeleton_title" />
+                <div className="skeleton club_skeleton_line" />
+                <div className="skeleton club_skeleton_line" />
+                <div className="skeleton club_skeleton_line club_skeleton_line--short" />
+              </section>
+            </div>
           ) : !club ? (
             <div className="club-empty">동아리 정보를 찾을 수 없습니다.</div>
           ) : (

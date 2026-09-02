@@ -6,6 +6,7 @@ import "./club_register.css";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { owner_register_club, owner_upload_images } from "../../lib/api";
+import { CLUB_TYPE_OPTIONS, DEFAULT_CLUB_TYPE, ClubTypeValue } from "../../lib/types";
 
 export default function ClubRegister() {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ export default function ClubRegister() {
   const today_str = new Date().toISOString().slice(0, 10);
 
   const [club_name, set_club_name] = useState("");
+  const [club_type, set_club_type] = useState<ClubTypeValue>(DEFAULT_CLUB_TYPE);
   const [club_one_line, set_club_one_line] = useState("");
   const [leader_name, set_leader_name] = useState("");
   const [phone, set_phone] = useState("");
@@ -150,7 +152,7 @@ export default function ClubRegister() {
         contact: phone,
         recruitDeadline: deadline || null,
         description: description_html,
-        type: "CENTRAL",
+        type: club_type,
         uploadedImageFileNames,
       });
 
@@ -269,6 +271,22 @@ export default function ClubRegister() {
               value={club_name}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => set_club_name(e.target.value)}
             />
+
+            <label className="cr_field_label" htmlFor="clubType">동아리 구분</label>
+            <select
+              id="clubType"
+              className="cr_field_input"
+              value={club_type}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                set_club_type(e.target.value as ClubTypeValue)
+              }
+            >
+              {CLUB_TYPE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
 
             <label className="cr_field_label" htmlFor="clubOneLine">동아리 한줄 소개</label>
             <input

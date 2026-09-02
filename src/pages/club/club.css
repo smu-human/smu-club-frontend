@@ -336,3 +336,59 @@ section.intro.card .desc.rich_desc table {
   width: auto;
   box-sizing: border-box;
 }
+
+/* ===== 헤더 제목 스켈레톤 =====
+   로딩 중 "클럽 1 상세" 같은 임시 문구가 보였다가 실제 이름으로 바뀌는
+   깜빡임을 없애기 위한 자리표시자. .page-header h1(18px/700)과 같은
+   높이를 차지해 레이아웃이 밀리지 않는다.
+   무늬/애니메이션은 globals.css의 .skeleton 이 담당하고, 여기서는 크기만 준다. */
+.club_title_skeleton {
+  width: 140px;
+  height: 20px;
+  margin: 0;
+  border-radius: 4px;
+}
+
+/* ===== 본문 로딩 스켈레톤 =====
+   갤러리 / 기본 정보 / 소개 세 카드의 골격을 그대로 깔아둔다.
+   실제 데이터가 도착했을 때 카드 위치가 튀지 않는다. */
+.club_skeleton_slide {
+  height: 320px; /* .slide 의 min-height 와 동일 */
+}
+
+.club_skeleton_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.club_skeleton_row:last-child {
+  border-bottom: 0;
+}
+
+.club_skeleton_label {
+  width: 56px;
+  height: 13px;
+}
+
+.club_skeleton_val {
+  width: 96px;
+  height: 14px;
+}
+
+.club_skeleton_title {
+  width: 88px;
+  height: 16px;
+  margin-bottom: 10px;
+}
+
+.club_skeleton_line {
+  height: 13px;
+  margin: 10px 0;
+}
+
+.club_skeleton_line--short {
+  width: 60%;
+}

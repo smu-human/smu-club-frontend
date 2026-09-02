@@ -217,3 +217,44 @@ body {
     gap: 16px;
   }
 }
+
+/* ===== 스켈레톤 (로딩 자리표시자) =====
+   데이터를 기다리는 동안 실제 화면과 같은 골격의 회색 블록을 깔아둔다.
+   "불러오는 중" 텍스트 한 줄과 달리 대기 시간이 짧게 느껴지고, 값이 도착해도
+   레이아웃이 밀리지 않는다. 크기/위치는 쓰는 쪽에서 정하고 여기서는 무늬만 준다. */
+.skeleton {
+  display: block;
+  background: linear-gradient(90deg, #eef0f3 25%, #f7f8fa 37%, #eef0f3 63%);
+  background-size: 400% 100%;
+  border-radius: 8px;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* 화면에는 안 보이지만 스크린리더는 읽는 텍스트.
+   로딩 안내처럼 시각적으로는 스켈레톤이 대신하는 정보에 쓴다. */
+.sr_only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
