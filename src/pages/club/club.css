@@ -87,14 +87,12 @@ body {
   align-items: center;
   justify-content: center;
   padding: 12px;
-  min-height: 320px;
   scroll-snap-align: center;
 }
 .slide > img {
   width: min(500px, 100%);
-  aspect-ratio: 1 / 1;
   height: auto;
-  object-fit: cover;
+  object-fit: contain;
   /* border-radius: 12px; */
   background: #f3f4f6;
   flex-shrink: 0;
