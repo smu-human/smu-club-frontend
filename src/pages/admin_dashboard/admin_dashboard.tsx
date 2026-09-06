@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import "./admin_dashboard.css";
 import {
   apiLogout,
-  fetch_auth_me,
   fetch_owner_club_detail,
+  fetch_owner_managed_clubs,
 } from "../../lib/api";
+import type { ManagedClub } from "../../lib/types";
 
 const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
@@ -38,6 +39,12 @@ function get_d_day(end_date_str: string | null): number | null {
   return diff >= 0 ? diff : null;
 }
 
+/** 백엔드 ManagedClubResponse는 clubId로 내려준다. id/club_id는 구버전 응답 호환용. */
+function get_club_id(club: ManagedClub | undefined): number | null {
+  const v = club?.clubId ?? club?.club_id ?? club?.id;
+  return typeof v === "number" ? v : null;
+}
+
 function status_label(status: string | null | undefined): string {
   const s = String(status || "").toUpperCase();
   if (s === "OPEN") return "모집중";
@@ -64,12 +71,21 @@ export default function AdminDashboard() {
     const load = async () => {
       set_loading(true);
       try {
-        const me = await fetch_auth_me();
-        const cid = me?.operatorId;
-        if (!cid) throw new Error("operatorId를 가져오지 못했습니다.");
+        // operatorId(운영자 PK)와 clubId(동아리 PK)는 다른 값이다. 예전에는 /auth/me의
+        // operatorId를 그대로 clubId로 썼는데, 두 값이 우연히 일치하는 계정에서만 동작하고
+        // 어긋나면 /club/{operatorId} 조회가 404("해당 동아리를 찾을 수 없습니다")로 떨어졌다.
+        // adminId -> clubId 변환은 managed-clubs(= findByAdminId)가 담당한다.
+        const clubs = await fetch_owner_managed_clubs();
+        const cid = get_club_id(clubs[0]);
+        if (!cid) {
+          set_error_msg("운영 중인 동아리가 없습니다. 동아리를 먼저 등록해 주세요.");
+          return;
+        }
         set_club_id(cid);
 
-        const club = await fetch_owner_club_detail(cid).catch(() => null);
+        // 예전에는 여기서 실패를 .catch(() => null)로 삼켰다. 그래서 잘못된 id로 404가
+        // 나도 대시보드는 멀쩡해 보이고, "동아리 페이지"를 눌러야 비로소 문제가 드러났다.
+        const club = await fetch_owner_club_detail(cid);
 
         if (club) {
           set_club_status(club.status ?? null);
