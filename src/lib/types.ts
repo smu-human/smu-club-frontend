@@ -12,6 +12,8 @@ export interface ApiWrapper<T> {
 export interface AuthMe {
   operatorId: number;
   name: string;
+  /** 소유 동아리 id. 없으면 null. 운영자당 동아리 1개(1:1) 전제. */
+  clubId?: number | null;
   studentId?: string;
   email?: string;
   phone?: string;
