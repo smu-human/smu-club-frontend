@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./app/router.tsx";
+import { RouteAwareAnalytics } from "./app/analytics.tsx";
 import { on_session_expired, clear_tokens } from "./lib/api";
 
 let unsub: (() => void) | null = null;
@@ -26,5 +27,6 @@ setup_session_expired_listener();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <RouterProvider router={router} />
+    <RouteAwareAnalytics />
   </React.StrictMode>,
 );
