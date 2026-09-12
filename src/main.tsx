@@ -2,6 +2,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { router } from "./app/router.tsx";
 import { on_session_expired, clear_tokens } from "./lib/api";
 
@@ -26,5 +27,6 @@ setup_session_expired_listener();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <RouterProvider router={router} />
+    <Analytics />
   </React.StrictMode>,
 );
