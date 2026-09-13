@@ -239,7 +239,6 @@
   right: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 3px;
   height: 20px;
   padding: 0 8px;
   border-radius: 9999px;
@@ -254,15 +253,9 @@
   pointer-events: none;
 }
 
-.home_main .club_type_badge svg {
-  width: 10px;
-  height: 10px;
-  fill: currentColor;
-}
-
 /* 배지가 있는 카드만 제목 오른쪽을 비운다. 없는 카드는 기존 폭을 그대로 쓴다. */
 .home_main .club_card--badged .club_name {
-  padding-right: 92px;
+  padding-right: 78px;
 }
 .home_main .club_desc {
   grid-column: 2;
