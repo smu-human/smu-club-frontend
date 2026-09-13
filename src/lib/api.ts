@@ -19,6 +19,7 @@ import type {
   ClubPayload,
   Notice,
   NoticePayload,
+  CreatedOperator,
 } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api/v1";
@@ -386,6 +387,24 @@ export async function admin_create_notice(payload: NoticePayload): Promise<numbe
 /** 공지는 수정 API가 없다. 내용을 고치려면 삭제 후 다시 등록한다. */
 export async function admin_delete_notice(notice_id: number | string): Promise<void> {
   await apiJson(`/admin/notices/${notice_id}`, { method: "DELETE" });
+}
+
+/**
+ * 동아리장(OWNER) 계정을 발급한다. 역할은 서버가 항상 OWNER로 고정하므로 보내지 않는다.
+ * 초기 비밀번호는 응답으로 받아 그대로 보여준다 — 화면에 상수로 적어두지 않는다.
+ */
+export async function admin_create_operator(payload: {
+  loginId: string;
+  name?: string;
+}): Promise<CreatedOperator> {
+  const res = await apiJson<CreatedOperator>("/admin/operators", {
+    method: "POST",
+    body: JSON.stringify({
+      loginId: payload.loginId,
+      ...(payload.name ? { name: payload.name } : {}),
+    }),
+  });
+  return res.data;
 }
 
 // ===== 멤버 =====

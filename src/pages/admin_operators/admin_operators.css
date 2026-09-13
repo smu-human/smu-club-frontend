@@ -1,0 +1,258 @@
+/* src/pages/admin_operators/admin_operators.css
+   관리자 대시보드(adm-*) / 공지 관리(an-*)와 같은 색·모양. 클래스는 ao- 로 분리한다. */
+
+.ao-root {
+  min-height: 100vh;
+  background: #e9efff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.ao-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  padding: max(5px, env(safe-area-inset-top)) 24px 5px;
+}
+
+.ao-header-inner {
+  position: relative;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ao-header-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.ao-back {
+  position: absolute;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #374151;
+  cursor: pointer;
+}
+
+.ao-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 24px 24px 40px;
+  box-sizing: border-box;
+}
+
+.ao-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.ao-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  padding: 20px;
+}
+
+.ao-panel-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.ao-error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #a82d2f;
+  font-size: 13px;
+}
+
+.ao-hint {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* 발급된 비밀번호는 한 번 지나가면 다시 볼 수 없으므로 눈에 띄게 경고한다. */
+.ao-warn {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ===== 폼 ===== */
+.ao-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ao-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ao-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.ao-optional {
+  margin-left: 4px;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.ao-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111827;
+  box-sizing: border-box;
+}
+
+.ao-input:focus {
+  outline: none;
+  border-color: #0e207f;
+}
+
+.ao-help {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+/* ===== 버튼 ===== */
+.ao-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ao-btn:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.ao-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ao-btn--primary {
+  background: #0e207f;
+  color: #fff;
+}
+
+.ao-btn--primary:hover:not(:disabled) {
+  background: #1a31a8;
+}
+
+.ao-btn--small {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+/* ===== 발급 결과 ===== */
+.ao-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ao-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.ao-cred {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ao-cred-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ao-cred-key {
+  flex-shrink: 0;
+  width: 56px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.ao-cred-val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  background: #f3f4f6;
+  padding: 1px 6px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.ao-cred-name {
+  font-size: 13px;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 1024px) {
+  .ao-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+}
