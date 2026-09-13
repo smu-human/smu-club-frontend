@@ -198,7 +198,7 @@ export default function AdminNotices() {
                 </label>
 
                 <div className="an-field">
-                  <span className="an-label">배너 이미지 (3:1, 권장 1200×400)</span>
+                  <span className="an-label">배너 이미지 (5:1, 권장 2000×400)</span>
                   <input
                     className="an-file"
                     type="file"
@@ -211,7 +211,7 @@ export default function AdminNotices() {
                       <img src={preview_url} alt="배너 미리보기" />
                       <p className="an-preview-hint">
                         홈에서는 이 비율 그대로 보입니다. 잘린 부분이 있으면
-                        이미지를 3:1로 다시 만들어 주세요.
+                        이미지를 5:1로 다시 만들어 주세요.
                       </p>
                     </div>
                   ) : (

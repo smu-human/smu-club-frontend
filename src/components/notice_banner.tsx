@@ -18,6 +18,31 @@ export default function NoticeBanner({ notices, onOpen }: Props) {
   const [active, set_active] = useState(0);
   const track_ref = useRef<HTMLDivElement>(null);
 
+  // 데스크톱에서는 띠가 화면 폭을 채우고 이미지는 가운데에 놓인다.
+  // 남는 양옆을 이미지와 같은 색으로 메워야 한 장의 띠처럼 보이므로,
+  // 이미지 왼쪽 가장자리 픽셀을 읽어 배경색으로 쓴다(공지마다 색이 다를 수 있다).
+  const [edge_colors, set_edge_colors] = useState<Record<number, string>>({});
+  // crossOrigin 을 붙이면 CORS 헤더가 없는 이미지는 아예 로드되지 않는다.
+  // 그런 경우 색 추출을 포기하고 평범하게 다시 받는다.
+  const [no_cors, set_no_cors] = useState<Record<number, boolean>>({});
+
+  const pick_edge_color = (id: number, el: HTMLImageElement) => {
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(el, 0, Math.floor(el.naturalHeight / 2), 1, 1, 0, 0, 1, 1);
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      set_edge_colors((prev) =>
+        prev[id] ? prev : { ...prev, [id]: `rgb(${r}, ${g}, ${b})` },
+      );
+    } catch {
+      // 캔버스가 오염되어 읽지 못하면 CSS 기본 배경색을 그대로 쓴다.
+    }
+  };
+
   // 공지가 없으면 영역 자체를 렌더하지 않는다(빈 상자를 남기지 않는다).
   if (notices.length === 0) return null;
 
@@ -46,8 +71,22 @@ export default function NoticeBanner({ notices, onOpen }: Props) {
             data-notice-id={n.id}
             aria-label={`공지 열기: ${n.title}`}
             onClick={() => onOpen(n)}
+            style={
+              edge_colors[n.id] ? { background: edge_colors[n.id] } : undefined
+            }
           >
-            <img className="nb_img" src={n.imageUrl} alt={n.title} />
+            <img
+              className="nb_img"
+              src={n.imageUrl}
+              alt={n.title}
+              crossOrigin={no_cors[n.id] ? undefined : "anonymous"}
+              onLoad={(e) => pick_edge_color(n.id, e.currentTarget)}
+              onError={() =>
+                set_no_cors((prev) =>
+                  prev[n.id] ? prev : { ...prev, [n.id]: true },
+                )
+              }
+            />
           </button>
         ))}
       </div>
