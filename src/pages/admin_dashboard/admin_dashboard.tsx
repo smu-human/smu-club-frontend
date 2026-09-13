@@ -7,6 +7,7 @@ import {
   fetch_auth_me,
   fetch_owner_club_detail,
 } from "../../lib/api";
+import type { OperatorRole } from "../../lib/types";
 
 const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 
@@ -51,6 +52,7 @@ export default function AdminDashboard() {
   today.setHours(0, 0, 0, 0);
 
   const [club_id, set_club_id] = useState<number | null>(null);
+  const [role, set_role] = useState<OperatorRole | null>(null);
   const [club_status, set_club_status] = useState<string | null>(null);
   const [club_start_date, set_club_start_date] = useState<string | null>(null);
   const [club_end_date, set_club_end_date] = useState<string | null>(null);
@@ -70,6 +72,7 @@ export default function AdminDashboard() {
         const me = await fetch_auth_me();
         const cid = me.clubId ?? null;
         set_club_id(cid);
+        set_role(me.role ?? null);
         if (cid == null) {
           // 아직 등록 전 — 에러가 아니라 정상 상태다. 메뉴의 "동아리 등록"으로 유도한다.
           return;
@@ -263,6 +266,31 @@ export default function AdminDashboard() {
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </li>
+              {/* 공지는 개발자(ADMIN)만 올린다. 동아리장 계정에는 메뉴 자체를 보여주지 않는다. */}
+              {role === "ADMIN" && (
+                <li
+                  className="adm-menu-item"
+                  onClick={() => navigate("/admin/notices")}
+                >
+                  <div className="adm-menu-item-text">
+                    <span className="adm-menu-item-name">공지 관리</span>
+                    <span className="adm-menu-item-desc">
+                      홈 배너에 노출할 공지를 등록·삭제합니다
+                    </span>
+                  </div>
+                  <svg
+                    className="adm-chevron"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </li>
+              )}
               <li
                 className="adm-menu-item"
                 onClick={() => navigate("/admin/mypage")}
