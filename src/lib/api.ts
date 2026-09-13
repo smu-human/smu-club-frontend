@@ -17,6 +17,8 @@ import type {
   UploadUrlItem,
   ApiErrorData,
   ClubPayload,
+  Notice,
+  NoticePayload,
 } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api/v1";
@@ -345,6 +347,47 @@ export async function submit_public_application(club_id: string | number, payloa
   return res.data;
 }
 
+// ===== 공지(배너) =====
+
+/** 홈 상단 배너용. 정렬(최신 등록순)은 서버 책임이므로 프론트에서 재정렬하지 않는다. */
+export async function fetch_public_notices(): Promise<Notice[]> {
+  const res = await apiJson<Notice[]>("/public/notices", { method: "GET" });
+  return res.data || [];
+}
+
+// ===== ADMIN(개발자) 공지 관리 =====
+// 아래 4개는 role=ADMIN 계정만 호출할 수 있다. OWNER가 호출하면 403 FORBIDDEN.
+
+export async function admin_fetch_notices(): Promise<Notice[]> {
+  const res = await apiJson<Notice[]>("/admin/notices", { method: "GET" });
+  return res.data || [];
+}
+
+/** 배너 이미지 1장을 업로드하고 서버에 제출할 객체 키(`notices/...`)를 돌려준다. */
+export async function admin_upload_notice_image(file: File): Promise<string> {
+  const names = await upload_images("/admin/notices/upload-urls", [file]);
+  const key = names[0];
+  if (!key) throw new Error("이미지 업로드에 실패했습니다.");
+  return key;
+}
+
+export async function admin_create_notice(payload: NoticePayload): Promise<number | null> {
+  const res = await apiJson<{ noticeId: number }>("/admin/notices", {
+    method: "POST",
+    body: JSON.stringify({
+      title: payload?.title ?? "",
+      body: payload?.body ?? "",
+      imageFileName: payload?.imageFileName ?? "",
+    }),
+  });
+  return res.data?.noticeId ?? null;
+}
+
+/** 공지는 수정 API가 없다. 내용을 고치려면 삭제 후 다시 등록한다. */
+export async function admin_delete_notice(notice_id: number | string): Promise<void> {
+  await apiJson(`/admin/notices/${notice_id}`, { method: "DELETE" });
+}
+
 // ===== 멤버 =====
 export async function fetch_mypage_name(): Promise<MyPageName> {
   const res = await apiJson<MyPageName>("/member/mypage/name", { method: "GET" });
@@ -420,13 +463,13 @@ export async function fetch_owner_managed_clubs(): Promise<ManagedClub[]> {
   return res.data || [];
 }
 
-async function owner_issue_upload_urls(files: File[]): Promise<UploadUrlItem[]> {
+async function issue_upload_urls(path: string, files: File[]): Promise<UploadUrlItem[]> {
   const payload_files = files.map((file) => ({
     fileName: file?.name || "file",
     contentType: file?.type || "application/octet-stream",
   }));
 
-  const res = await apiJson<UploadUrlItem[]>("/owner/club/upload-urls", {
+  const res = await apiJson<UploadUrlItem[]>(path, {
     method: "POST",
     body: JSON.stringify({ files: payload_files }),
   });
@@ -434,7 +477,7 @@ async function owner_issue_upload_urls(files: File[]): Promise<UploadUrlItem[]> 
   return Array.isArray(res?.data) ? res.data : [];
 }
 
-async function owner_put_presigned_url(preSignedUrl: string, file: File): Promise<boolean> {
+async function put_presigned_url(preSignedUrl: string, file: File): Promise<boolean> {
   const putRes = await fetch(preSignedUrl, {
     method: "PUT",
     headers: {
@@ -449,10 +492,14 @@ async function owner_put_presigned_url(preSignedUrl: string, file: File): Promis
   return true;
 }
 
-export async function owner_upload_images(files: File[]): Promise<string[]> {
+/**
+ * Pre-Signed URL을 발급받아 파일을 직접 PUT하고, 서버에 제출할 객체 키 목록을 돌려준다.
+ * 발급 경로에 따라 키 접두사가 달라진다(동아리 `clubs/`, 공지 `notices/`).
+ */
+export async function upload_images(path: string, files: File[]): Promise<string[]> {
   if (!Array.isArray(files) || files.length === 0) return [];
 
-  const issued = await owner_issue_upload_urls(files);
+  const issued = await issue_upload_urls(path, files);
 
   if (issued.length !== files.length) {
     throw new Error("업로드 URL 개수가 파일 개수와 다릅니다.");
@@ -468,11 +515,15 @@ export async function owner_upload_images(files: File[]): Promise<string[]> {
       throw new Error(`업로드 URL 응답이 올바르지 않습니다 (index ${i})`);
     }
 
-    await owner_put_presigned_url(issued_item.preSignedUrl, file);
+    await put_presigned_url(issued_item.preSignedUrl, file);
     uploaded_names.push(issued_item.fileName);
   }
 
   return uploaded_names;
+}
+
+export async function owner_upload_images(files: File[]): Promise<string[]> {
+  return upload_images("/owner/club/upload-urls", files);
 }
 
 export async function owner_register_club(payload: ClubPayload): Promise<ApiWrapper<unknown>> {

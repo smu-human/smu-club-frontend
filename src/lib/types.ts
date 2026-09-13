@@ -9,11 +9,19 @@ export interface ApiWrapper<T> {
 }
 
 // ===== 인증 =====
+/**
+ * 운영자 역할. 백엔드 OperatorRole enum과 1:1로 대응한다.
+ * 계층은 `ADMIN ⊃ OWNER` — ADMIN(개발자)은 공지 관리에 더해 동아리장 화면도 그대로 쓴다.
+ */
+export type OperatorRole = "OWNER" | "ADMIN";
+
 export interface AuthMe {
   operatorId: number;
   name: string;
   /** 소유 동아리 id. 없으면 null. 운영자당 동아리 1개(1:1) 전제. */
   clubId?: number | null;
+  /** 공지 관리 메뉴 노출 근거. 서버가 내려주지 않던 시절 응답도 있으므로 optional. */
+  role?: OperatorRole;
   studentId?: string;
   email?: string;
   phone?: string;
@@ -92,6 +100,27 @@ export interface ClubListItem {
   thumbnailUrl?: string;
   /** 목록은 백엔드가 중앙동아리 우선으로 정렬해 내려준다. 프론트에서 재정렬하지 않는다. */
   type?: ClubTypeValue;
+}
+
+// ===== 공지(배너) =====
+export interface Notice {
+  id: number;
+  title: string;
+  /**
+   * 평문이다. HTML이 아니므로 dangerouslySetInnerHTML로 렌더하지 않는다.
+   * 줄바꿈이 그대로 오므로 `white-space: pre-wrap`으로 살린다.
+   */
+  body: string;
+  /** 3:1 띠 이미지의 공개 URL. 객체 키가 아니다. */
+  imageUrl: string;
+  createdAt?: string;
+}
+
+/** 공지 등록 payload. `imageFileName`은 upload-urls가 돌려준 키(`notices/...`)여야 한다. */
+export interface NoticePayload {
+  title: string;
+  body: string;
+  imageFileName: string;
 }
 
 // ===== 지원서 질문/답변 =====

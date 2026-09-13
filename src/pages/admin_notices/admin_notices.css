@@ -1,0 +1,290 @@
+/* src/pages/admin_notices/admin_notices.css
+   관리자 대시보드(adm-*)와 같은 색/모양을 쓰되, 클래스는 an- 으로 분리한다. */
+
+.an-root {
+  min-height: 100vh;
+  background: #e9efff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.an-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  padding: max(5px, env(safe-area-inset-top)) 24px 5px;
+}
+
+.an-header-inner {
+  position: relative;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.an-header-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.an-back {
+  position: absolute;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #374151;
+  cursor: pointer;
+}
+
+.an-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 24px 24px 40px;
+  box-sizing: border-box;
+}
+
+.an-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.an-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  padding: 20px;
+}
+
+.an-panel-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.an-error {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #a82d2f;
+  font-size: 13px;
+}
+
+.an-hint {
+  color: #6b7280;
+  font-size: 13px;
+  margin: 0;
+}
+
+.an-hint--small {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+/* ===== 등록 폼 ===== */
+.an-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.an-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.an-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.an-count {
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.an-input,
+.an-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111827;
+  box-sizing: border-box;
+}
+
+.an-textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.an-input:focus,
+.an-textarea:focus {
+  outline: none;
+  border-color: #0e207f;
+}
+
+.an-file {
+  font-size: 13px;
+  color: #374151;
+}
+
+/* 홈 배너와 같은 3:1 로 잘라 보여준다 — 여기서 확인한 모습이 실제 노출 모습이다. */
+.an-preview {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #eef0f3;
+}
+
+.an-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  object-fit: cover;
+}
+
+.an-preview--empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 1;
+  border: 1px dashed #d1d5db;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.an-preview-hint {
+  margin: 0;
+  padding: 8px 10px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ===== 버튼 ===== */
+.an-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.an-btn:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.an-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.an-btn--primary {
+  background: #0e207f;
+  color: #fff;
+}
+
+.an-btn--primary:hover:not(:disabled) {
+  background: #1a31a8;
+}
+
+.an-btn--danger {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  background: #fef2f2;
+  color: #a82d2f;
+  font-size: 13px;
+}
+
+.an-btn--danger:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+/* ===== 목록 ===== */
+.an-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.an-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.an-thumb {
+  flex-shrink: 0;
+  width: 96px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #eef0f3;
+}
+
+.an-item-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.an-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.an-item-date {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+@media (min-width: 1024px) {
+  .an-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+}

@@ -1,11 +1,13 @@
 // src/pages/home/home.tsx
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import "../../styles/globals.css";
 import "./home.css";
-import { fetch_public_clubs } from "../../lib/api";
-import { ClubListItem } from "../../lib/types";
+import { fetch_public_clubs, fetch_public_notices } from "../../lib/api";
+import { ClubListItem, Notice } from "../../lib/types";
+import NoticeBanner from "../../components/notice_banner";
+import NoticeModal from "../../components/notice_modal";
 
 interface ClubItem {
   id: number;
@@ -79,6 +81,36 @@ export default function HomePage() {
   const [clubs, setClubs] = useState<ClubItem[]>([]);
   const [is_loading, set_is_loading] = useState(false);
   const [error_msg, set_error_msg] = useState("");
+
+  const [notices, set_notices] = useState<Notice[]>([]);
+  const [search_params, set_search_params] = useSearchParams();
+
+  // 열린 공지는 URL이 정한다. 그래야 모바일에서 뒤로가기로 닫히고, 링크 공유도 된다.
+  const open_notice_id = search_params.get("notice");
+  const open_notice = useMemo(
+    () => notices.find((n) => String(n.id) === open_notice_id) ?? null,
+    [notices, open_notice_id],
+  );
+
+  const open_notice_modal = (notice: Notice) => {
+    const next = new URLSearchParams(search_params);
+    next.set("notice", String(notice.id));
+    set_search_params(next);
+  };
+
+  // 닫을 때는 replace 다. push 로 지우면 뒤로가기가 다시 모달을 여는 꼴이 된다.
+  const close_notice_modal = () => {
+    const next = new URLSearchParams(search_params);
+    next.delete("notice");
+    set_search_params(next, { replace: true });
+  };
+
+  // 동아리 목록과 별도로 받는다. 공지 조회가 실패해도 목록은 그대로 나와야 한다.
+  useEffect(() => {
+    fetch_public_notices()
+      .then((data) => set_notices(Array.isArray(data) ? data : []))
+      .catch(() => set_notices([]));
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -224,6 +256,8 @@ export default function HomePage() {
         </div>
       </header>
 
+      <NoticeBanner notices={notices} onOpen={open_notice_modal} />
+
       <main className="home_main" aria-busy={is_loading}>
         {error_msg && <div className="error_msg">{error_msg}</div>}
 
@@ -289,6 +323,8 @@ export default function HomePage() {
           </a>
         </p>
       </footer>
+
+      <NoticeModal notice={open_notice} onClose={close_notice_modal} />
     </div>
   );
 }
