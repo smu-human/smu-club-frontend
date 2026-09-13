@@ -266,7 +266,7 @@ export default function AdminDashboard() {
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </li>
-              {/* 공지는 개발자(ADMIN)만 올린다. 동아리장 계정에는 메뉴 자체를 보여주지 않는다. */}
+              {/* 공지·계정 발급은 개발자(ADMIN)만 쓴다. 동아리장 계정에는 메뉴 자체를 보여주지 않는다. */}
               {role === "ADMIN" && (
                 <li
                   className="adm-menu-item"
@@ -276,6 +276,30 @@ export default function AdminDashboard() {
                     <span className="adm-menu-item-name">공지 관리</span>
                     <span className="adm-menu-item-desc">
                       홈 배너에 노출할 공지를 등록·삭제합니다
+                    </span>
+                  </div>
+                  <svg
+                    className="adm-chevron"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </li>
+              )}
+              {role === "ADMIN" && (
+                <li
+                  className="adm-menu-item"
+                  onClick={() => navigate("/admin/operators")}
+                >
+                  <div className="adm-menu-item-text">
+                    <span className="adm-menu-item-name">계정 생성</span>
+                    <span className="adm-menu-item-desc">
+                      동아리장 로그인 계정을 발급합니다
                     </span>
                   </div>
                   <svg

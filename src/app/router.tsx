@@ -26,6 +26,7 @@ const AdminClubInfoEdit = lazy(() => import("../pages/admin_club_info_edit/admin
 const AdminApplicantManage = lazy(() => import("../pages/admin_applicant_manage/admin_applicant_manage.tsx"));
 const AdminMyPage = lazy(() => import("../pages/admin_mypage/admin_mypage.tsx"));
 const AdminNotices = lazy(() => import("../pages/admin_notices/admin_notices.tsx"));
+const AdminOperators = lazy(() => import("../pages/admin_operators/admin_operators.tsx"));
 
 function lazy_route(Component: ComponentType): ReactElement {
   return (
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
   { path: "/admin/mypage", element: lazy_route(AdminMyPage) },
   // 개발자(role=ADMIN) 전용. 진입 자체는 막지 않고 페이지가 안내하며, 실제 차단은 서버 403이다.
   { path: "/admin/notices", element: lazy_route(AdminNotices) },
+  { path: "/admin/operators", element: lazy_route(AdminOperators) },
 
   { path: "/mypage", element: lazy_route(MyPage) },
   { path: "/account_edit", element: lazy_route(AccountEdit) },

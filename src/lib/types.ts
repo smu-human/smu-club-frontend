@@ -102,6 +102,18 @@ export interface ClubListItem {
   type?: ClubTypeValue;
 }
 
+// ===== 운영자 계정 발급 (ADMIN 전용) =====
+/**
+ * 발급된 동아리장 계정. `initialPassword`는 서버가 정하는 값이므로 프론트에 상수로 복제하지 않는다
+ * (서버가 랜덤 발급으로 바뀌어도 화면은 그대로 동작해야 한다).
+ */
+export interface CreatedOperator {
+  operatorId: number;
+  loginId: string;
+  name: string;
+  initialPassword: string;
+}
+
 // ===== 공지(배너) =====
 export interface Notice {
   id: number;
