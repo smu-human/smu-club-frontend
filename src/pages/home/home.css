@@ -225,6 +225,45 @@
   font-weight: 700;
   margin: 0;
 }
+
+/* ===== 동아리 구분 배지 (중앙동아리) =====
+   카드 오른쪽 위에 얹는다. 카드가 grid 라 흐름에 넣으면 칸을 하나 차지하므로
+   absolute 로 띄우고, 대신 제목이 배지 밑으로 파고들지 않게 오른쪽 여백을 비워둔다. */
+.home_main .club_card {
+  position: relative;
+}
+
+.home_main .club_type_badge {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 9999px;
+  background: #eef1ff;
+  border: 1px solid #c9d2f7;
+  color: #0e207f;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  /* 배지를 눌러도 카드 클릭(상세 이동)이 그대로 동작해야 한다. */
+  pointer-events: none;
+}
+
+.home_main .club_type_badge svg {
+  width: 10px;
+  height: 10px;
+  fill: currentColor;
+}
+
+/* 배지가 있는 카드만 제목 오른쪽을 비운다. 없는 카드는 기존 폭을 그대로 쓴다. */
+.home_main .club_card--badged .club_name {
+  padding-right: 92px;
+}
 .home_main .club_desc {
   grid-column: 2;
   grid-row: 2;
