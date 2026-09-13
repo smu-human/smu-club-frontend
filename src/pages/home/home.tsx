@@ -302,12 +302,7 @@ export default function HomePage() {
                 />
                 {/* 지금은 중앙동아리만 표시한다. 그 외(ETC)는 배지를 달지 않는다. */}
                 {c.type === "CENTRAL" && (
-                  <span className="club_type_badge">
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.3l-5.8 3.1 1.1-6.5L2.6 9.3l6.5-.9z" />
-                    </svg>
-                    중앙동아리
-                  </span>
+                  <span className="club_type_badge">중앙동아리</span>
                 )}
                 <h3 className="club_name">{c.name}</h3>
                 <p className="club_desc">{c.desc}</p>
